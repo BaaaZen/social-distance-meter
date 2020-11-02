@@ -24,6 +24,8 @@ import de.mhid.opensource.cwadetails.R;
 import de.mhid.opensource.cwadetails.ble.BleScanService;
 
 public class MainActivity extends AppCompatActivity {
+  public static final String INTENT_SCAN_RESULT_COUNT = "scan_result_count";
+  public static final String INTENT_SCAN_RESULT_COUNT__COUNT = "count";
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -44,29 +46,36 @@ public class MainActivity extends AppCompatActivity {
       }
     });
 
-    // start scanner service
-    Intent bleServiceIntent = new Intent(this, BleScanService.class);
-    startService(bleServiceIntent);
-
-    // register user count from service
+    // register scan result receiver from service
     IntentFilter rcvUserCountFilter = new IntentFilter();
-    rcvUserCountFilter.addAction(BleScanService.INTENT_SCAN_RESULT_COUNT);
+    rcvUserCountFilter.addAction(INTENT_SCAN_RESULT_COUNT);
     BroadcastReceiver rcvUserCount = new BroadcastReceiver() {
       @Override
       public void onReceive(Context context, Intent intent) {
         if(intent != null) {
-          int count = intent.getIntExtra("count", 0);
+          int count = intent.getIntExtra(INTENT_SCAN_RESULT_COUNT__COUNT, -1);
           updateUserCount(count);
         }
       }
     };
     registerReceiver(rcvUserCount, rcvUserCountFilter);
+
+    // start scanner service and request recent user count
+    Intent bleServiceIntent = new Intent(this, BleScanService.class);
+    bleServiceIntent.setAction(BleScanService.INTENT_REQUEST_USER_COUNT);
+    startService(bleServiceIntent);
   }
 
   private void updateUserCount(int count) {
     // update text view
     TextView currentUsers = (TextView)findViewById(R.id.current_users_count);
-    currentUsers.setText(getResources().getQuantityString(R.plurals.current_users_count, count, count));
+    if(count >= 0) {
+      // valid user count -> update output
+      currentUsers.setText(getResources().getQuantityString(R.plurals.current_users_count, count, count));
+    } else {
+      // invalid user count -> maybe error?
+      currentUsers.setText(getResources().getString(R.string.current_users_unknown));
+    }
 
     // update user icon
     int iconRes;

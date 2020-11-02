@@ -1,6 +1,7 @@
 package de.mhid.opensource.cwadetails.database;
 
 import android.content.Context;
+import android.os.AsyncTask;
 
 import androidx.room.Room;
 
@@ -12,9 +13,26 @@ public class Database {
   }
 
 
-  private CwaDatabase cwaDatabase;
+//  private CwaDatabase cwaDatabase;
+  private Context ctx;
   private Database(Context ctx) {
-    cwaDatabase = Room.databaseBuilder(ctx, CwaDatabase.class, "cwa-token.db").build();
+    this.ctx = ctx;
+//    cwaDatabase = Room.databaseBuilder(ctx, CwaDatabase.class, "cwa-token.db").build();
+  }
+
+  public CwaDatabase cwaDatabase() {
+    return Room.databaseBuilder(ctx, CwaDatabase.class, "cwa-token.db").build();
+//    return cwaDatabase;
+  }
+
+  public void runAsync(Runnable runnable) {
+    Runnable r = () -> {
+      synchronized (instance) {
+        runnable.run();
+      }
+    };
+
+    AsyncTask.execute(r);
   }
 
 }

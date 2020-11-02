@@ -44,7 +44,7 @@ public class BleScanner {
     public void onScanResult(int callbackType, ScanResult result) {
       super.onScanResult(callbackType, result);
 
-      service.scanResult(result.getDevice().getAddress(), result.getRssi(), result.getScanRecord().getBytes());
+      service.scanResult(result.getDevice().getAddress(), result.getRssi(), result.getScanRecord().getServiceData(new ParcelUuid(UUID_ENF)));
     }
   }
 
