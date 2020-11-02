@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelUuid;
+import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
@@ -20,8 +21,8 @@ import java.util.List;
 import java.util.UUID;
 
 public class BleScanner {
-  private static final long SCAN_PERIOD = 10000;
-  private static final long SCAN_DURATION = 5000;
+  private static final long SCAN_PERIOD = 30000;
+  private static final long SCAN_DURATION = 10000;
 
   private static final UUID UUID_ENF = UUID.fromString("0000fd6f-0000-1000-8000-00805f9b34fb");
   private static final UUID[] UUID_FILTER_LIST = new UUID[]{UUID_ENF};
@@ -29,7 +30,6 @@ public class BleScanner {
   private ScanSettings scanSettings = null;
   private BleScanner.BleScanCallback bleScanCallback = null;
 
-  private BluetoothAdapter bluetoothAdapter = null;
   private BluetoothLeScanner bluetoothLeScanner = null;
 
   private BleScanService service;
@@ -59,18 +59,8 @@ public class BleScanner {
   public BleScanner(BleScanService service) {
     this.service = service;
 
-    // initialize environment
-    init();
-
     // schedule scan
-    scheduleScan();
-  }
-
-  private void init() {
-    if(bluetoothAdapter == null) {
-      final BluetoothManager bluetoothManager = (BluetoothManager)service.getSystemService(Context.BLUETOOTH_SERVICE);
-      bluetoothAdapter = bluetoothManager.getAdapter();
-    }
+    scheduleScan(100);
   }
 
   protected void shutdown() {
@@ -83,9 +73,9 @@ public class BleScanner {
     handler.removeCallbacks(runScheduledScan);
   }
 
-  private void scheduleScan() {
+  private void scheduleScan(long waitDuration) {
     if(shutdown) return;
-    handler.postDelayed(runScheduledScan, SCAN_PERIOD);
+    handler.postDelayed(runScheduledScan, waitDuration);
   }
 
   private void scan_Older() {
@@ -101,7 +91,7 @@ public class BleScanner {
 
     // init bluetooth le scanner
     if(bluetoothLeScanner == null) {
-      bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
+      bluetoothLeScanner = BluetoothAdapter.getDefaultAdapter().getBluetoothLeScanner();
     }
 
     // init scan filter
@@ -131,6 +121,7 @@ public class BleScanner {
     // start scan
     service.scanBegin();
     bluetoothLeScanner.startScan(scanFilter, scanSettings, bleScanCallback);
+//    bluetoothLeScanner.startScan(bleScanCallback);
 
     // stop scan after x seconds
     new Handler(Looper.myLooper()).postDelayed(() -> {
@@ -141,7 +132,7 @@ public class BleScanner {
         scanRunning = false;
       }
       // re-schedule scan
-      scheduleScan();
+      scheduleScan(SCAN_PERIOD);
     }, SCAN_DURATION);
   }
 
