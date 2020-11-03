@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:cardBackgroundColor="@color/light_blue_400"
@@ -22,21 +23,28 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <include
-            android:id="@+id/card_current_waiting"
-            layout="@layout/card_current_waiting"
+        <FrameLayout
+            android:id="@+id/card_current_f1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="visible"
-            app:layout_constraintTop_toBottomOf="@+id/card_current_title" />
+            app:layout_constraintTop_toBottomOf="@+id/card_current_title">
 
-        <include
-            android:id="@+id/card_current_info"
-            layout="@layout/card_current_info"
+            <include
+                android:id="@+id/card_current_waiting"
+                layout="@layout/card_current_waiting"
+                android:visibility="visible" />
+
+            <include
+                android:id="@+id/card_current_info"
+                layout="@layout/card_current_info"
+                android:visibility="gone" />
+        </FrameLayout>
+
+        <de.mhid.opensource.cwadetails.views.HistoryGraphView
+            android:id="@+id/view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@+id/card_current_title" />
+            android:layout_height="100dp"
+            app:layout_constraintTop_toBottomOf="@id/card_current_f1" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
