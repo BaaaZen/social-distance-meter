@@ -3,9 +3,10 @@
     <string name="title_activity_main">CWA Details</string>
 
     <!-- current informations block -->
-    <string name="waiting_scan_start">Waiting for scan results ...</string>
-    <string name="current_users_unknown">Unable to count people near you.</string>
-    <plurals name="current_users_count">
+    <string name="card_current_title">Current environment</string>
+    <string name="card_current_waiting_scan_start">Waiting for scan results ...</string>
+    <string name="card_current_users_unknown">Unable to count people near you.</string>
+    <plurals name="card_current_users_count">
         <item quantity="zero">Nobody near you.</item>
         <item quantity="one">%d person near you.</item>
         <item quantity="other">%d people near you.</item>

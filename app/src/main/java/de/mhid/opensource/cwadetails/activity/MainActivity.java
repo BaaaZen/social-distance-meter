@@ -15,7 +15,6 @@ import com.google.android.material.snackbar.Snackbar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -71,10 +70,10 @@ public class MainActivity extends AppCompatActivity {
     TextView currentUsers = (TextView)findViewById(R.id.current_users_count);
     if(count >= 0) {
       // valid user count -> update output
-      currentUsers.setText(getResources().getQuantityString(R.plurals.current_users_count, count, count));
+      currentUsers.setText(getResources().getQuantityString(R.plurals.card_current_users_count, count, count));
     } else {
       // invalid user count -> maybe error?
-      currentUsers.setText(getResources().getString(R.string.current_users_unknown));
+      currentUsers.setText(getResources().getString(R.string.card_current_users_unknown));
     }
 
     // update user icon

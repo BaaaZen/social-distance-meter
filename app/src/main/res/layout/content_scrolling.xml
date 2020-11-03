@@ -11,33 +11,16 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingLeft="8dp"
-        android:paddingTop="8dp"
-        android:paddingRight="8dp"
-        android:paddingBottom="8dp">
+        android:orientation="vertical">
 
-        <androidx.cardview.widget.CardView
+        <include
+            android:id="@+id/card_current"
+            layout="@layout/card_current"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:cardBackgroundColor="@color/gray_400"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="2dp">
-
-            <include
-                android:id="@+id/card_current_waiting"
-                layout="@layout/card_current_waiting"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:visibility="visible" />
-
-            <include
-                android:id="@+id/card_current_info"
-                layout="@layout/card_current_info"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:visibility="gone" />
-
-        </androidx.cardview.widget.CardView>
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginBottom="8dp" />
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>
