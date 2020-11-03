@@ -10,7 +10,7 @@ import java.util.Date;
 
 @Entity(tableName = "cwa_token")
 public class CwaToken {
-  @PrimaryKey
+  @PrimaryKey(autoGenerate = true)
   public long id;
 
   @NonNull
