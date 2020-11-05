@@ -2,7 +2,9 @@
     <string name="app_name">CWA Details</string>
     <string name="title_activity_main">CWA Details</string>
 
-    <!-- current informations block -->
+    <string name="placeholder">PLACEHOLDER</string>
+
+    <!-- CARD: current informations -->
     <string name="card_current_title">Current environment</string>
     <string name="card_current_waiting_scan_start">Waiting for scan results ...</string>
     <string name="card_current_users_unknown">Unable to count people near you.</string>
@@ -11,4 +13,15 @@
         <item quantity="one">%d person near you.</item>
         <item quantity="other">%d people near you.</item>
     </plurals>
+
+    <!-- CARD: permissions -->
+    <string name="card_permissions_title">Required permissions</string>
+    <string name="card_permissions_label_background_permission">Always</string>
+    <string name="card_permissions_description_location">The purpose of this app is to scan and log tokens sent out of the Corona Warn App via Bluetooth Low Energy (BLE).\nTo be able to collect data from BLE the app requires the permission to access location services.\n\nThe app without the permission to access location services is useless.</string>
+    <string name="card_permissions_command_location">Request permission</string>
+    <string name="card_permissions_description_background">You already permitted this app to access location service, but only while the app is active.\n\nTo be able to scan in background when this app is not active, the permission "%1$s" is required.</string>
+    <string name="card_permissions_command_background">Request permission "%1$s"</string>
+
+    <!--  notification  -->
+    <string name="notification_title">CWA Details</string>
 </resources>
