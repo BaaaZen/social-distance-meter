@@ -155,6 +155,8 @@ public class MainActivity extends AppCompatActivity {
     CardView cardPermissions = (CardView)findViewById(R.id.card_permissions);
     TextView permissionDescription = (TextView)findViewById(R.id.card_permissions_description);
     TextView permissionCommand = (TextView)findViewById(R.id.card_permissions_command);
+
+    String nationalCWAName = getResources().getString(R.string.national_cwa_name);
     String backgroundPermissionOptionLabel = getResources().getString(R.string.card_permissions_label_background_permission);
     if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
       backgroundPermissionOptionLabel = getPackageManager().getBackgroundPermissionOptionLabel().toString();
@@ -163,10 +165,12 @@ public class MainActivity extends AppCompatActivity {
     if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
       if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         // only request location
-        permissionDescription.setText(getResources().getString(R.string.card_permissions_description_location));
+        permissionDescription.setText(getResources().getString(R.string.card_permissions_description_location, nationalCWAName));
         permissionCommand.setText(getResources().getString(R.string.card_permissions_command_location));
       } else {
         // request location + background
+        permissionDescription.setText(getResources().getString(R.string.card_permissions_description_location_background, nationalCWAName, backgroundPermissionOptionLabel));
+        permissionCommand.setText(getResources().getString(R.string.card_permissions_command_location_background, backgroundPermissionOptionLabel));
       }
       cardPermissions.setVisibility(View.VISIBLE);
     } else if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
