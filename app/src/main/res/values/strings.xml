@@ -3,10 +3,11 @@
     <string name="title_activity_main">CWA Details</string>
 
     <string name="placeholder">PLACEHOLDER</string>
+    <string name="unknown_error">Unknown Error</string>
 
     <!-- CARD: current informations -->
     <string name="card_current_title">Current environment</string>
-    <string name="card_current_waiting_scan_start">Waiting for scan results ...</string>
+    <string name="card_current_waiting_scan_results">Waiting for scan results ...</string>
     <string name="card_current_users_unknown">Unable to count people near you.</string>
     <plurals name="card_current_users_count">
         <item quantity="zero">Nobody near you.</item>

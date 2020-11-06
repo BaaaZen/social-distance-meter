@@ -32,6 +32,9 @@ public class MainActivity extends AppCompatActivity {
   public static final String INTENT_SCAN_RESULT_COUNT = "scan_result_count";
   public static final String INTENT_SCAN_RESULT_COUNT__COUNT = "count";
 
+  public static final int COUNT_ERROR_SCANNING_IN_PROGRESS = -1;
+  public static final int COUNT_ERROR_UNABLE_TO_SCAN = -2;
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -91,41 +94,54 @@ public class MainActivity extends AppCompatActivity {
     startService(bleServiceIntent);
   }
 
-  private void resetUserCount() {
-    // set "card_current_info" invisible
-    findViewById(R.id.card_current_info).setVisibility(View.GONE);
-    // set "card_current_waiting" visible
-    findViewById(R.id.card_current_waiting).setVisibility(View.VISIBLE);
-
+  private void requestUserCount() {
     // start scanner service and request recent user count
     Intent bleServiceIntent = new Intent(this, BleScanService.class);
     bleServiceIntent.setAction(BleScanService.INTENT_START_MAIN_ACTIVITY);
     startService(bleServiceIntent);
   }
 
-  private void updateUserCount(int count) {
-    // update text view
-    TextView currentUsers = (TextView)findViewById(R.id.current_users_count);
-    if(count >= 0) {
+  public static String getStatusForUserCount(Context ctx, int count) {
+    if(count == COUNT_ERROR_UNABLE_TO_SCAN) {
+      // unable to scan
+      return ctx.getResources().getString(R.string.card_current_users_unknown);
+    } else if(count == COUNT_ERROR_SCANNING_IN_PROGRESS) {
+      // scan in progress
+      return ctx.getResources().getString(R.string.card_current_waiting_scan_results);
+    } else if(count >= 0) {
       // valid user count -> update output
-      currentUsers.setText(getResources().getQuantityString(R.plurals.card_current_users_count, count, count));
+      return ctx.getResources().getQuantityString(R.plurals.card_current_users_count, count, count);
     } else {
-      // invalid user count -> maybe error?
-      currentUsers.setText(getResources().getString(R.string.card_current_users_unknown));
+      return ctx.getResources().getString(R.string.unknown_error);
     }
+  }
 
-    // update user icon
+  public static int getIconForUserCount(Context ctx, int count) {
     int iconRes;
-    if(count <= 0) {
+    if(count == COUNT_ERROR_SCANNING_IN_PROGRESS) {
+      iconRes = R.drawable.round_search_24;
+    } else if(count == 0) {
       iconRes = R.drawable.round_person_outline_24;
     } else if(count == 1) {
       iconRes = R.drawable.round_person_24;
     } else if(count == 2) {
       iconRes = R.drawable.round_people_24;
-    } else {
+    } else if(count > 2){
       iconRes = R.drawable.round_groups_24;
+    } else {
+      iconRes = R.drawable.round_error_outline_24;
     }
+    return iconRes;
+  }
+
+  private void updateUserCount(int count) {
+    // update text view
+    TextView currentUsers = (TextView)findViewById(R.id.current_users_count);
+    currentUsers.setText(getStatusForUserCount(this, count));
+
+    // update user icon
     ImageView currentUserIcon = (ImageView)findViewById(R.id.current_users_icon);
+    int iconRes = getIconForUserCount(this, count);
     Drawable icon;
     if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
       icon = getDrawable(iconRes);
@@ -133,11 +149,6 @@ public class MainActivity extends AppCompatActivity {
       icon = getResources().getDrawable(iconRes);
     }
     currentUserIcon.setImageDrawable(icon);
-
-    // set "card_current_waiting" invisible
-    findViewById(R.id.card_current_waiting).setVisibility(View.GONE);
-    // set "card_current_info" visible
-    findViewById(R.id.card_current_info).setVisibility(View.VISIBLE);
   }
 
   private void checkRequestPermission() {
@@ -183,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
   @Override
   public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
     // reset user count
-    resetUserCount();
+    requestUserCount();
     // re-check permissions
     checkRequestPermission();
   }

@@ -37,8 +37,6 @@ public class BleScanService extends Service {
 
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
-    updateNotification(recentUserCount);
-
     boolean hasLocationPermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
             PackageManager.PERMISSION_GRANTED;
     boolean hasBackgroundPermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) ==
@@ -53,9 +51,11 @@ public class BleScanService extends Service {
           // we have a current user count
           // -> send intent
           sendScanResultUserCount(recentUserCount);
+        } else {
+          sendScanResultUserCount(MainActivity.COUNT_ERROR_SCANNING_IN_PROGRESS);
         }
       } else {
-        sendScanResultUserCount(-1);
+        sendScanResultUserCount(MainActivity.COUNT_ERROR_UNABLE_TO_SCAN);
       }
     }
 
@@ -131,6 +131,10 @@ public class BleScanService extends Service {
 
   protected void scanBegin() {
     Log.d("scanResults", "BEGIN");
+    if(recentUserCount == null) {
+      sendScanResultUserCount(MainActivity.COUNT_ERROR_SCANNING_IN_PROGRESS);
+    }
+
     scanResults = new HashMap<>();
     scanTimestamp = new Date();
   }
@@ -151,15 +155,6 @@ public class BleScanService extends Service {
 
   protected void scanFinished() {
     Log.d("scanResults", "FINISHED");
-
-    boolean hasLocationPermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
-            PackageManager.PERMISSION_GRANTED;
-    if(!hasLocationPermission) {
-      // no location permission -> no results!
-      recentUserCount = null;
-      sendScanResultUserCount(-1);
-      return;
-    }
 
     int userCount = scanResults.size();
 
@@ -190,28 +185,22 @@ public class BleScanService extends Service {
     Log.d("scanResults", "Count: " + scanResults.size());
   }
 
-  private void updateNotification(Integer userCount) {
-    if(userCount == null) userCount = 0;
+  protected void scanPermissionError() {
+    // no location permission -> no results!
+    recentUserCount = null;
+    sendScanResultUserCount(MainActivity.COUNT_ERROR_UNABLE_TO_SCAN);
+  }
 
+  protected void scanBluetoothError() {
+    // bluetooth disabled -> no results!
+    recentUserCount = null;
+    sendScanResultUserCount(MainActivity.COUNT_ERROR_UNABLE_TO_SCAN);
+  }
+
+  private void updateNotification(int userCount) {
     // calc text and icon
-    String nText;
-    if(userCount >= 0) {
-      // valid user count -> update output
-      nText = getResources().getQuantityString(R.plurals.card_current_users_count, userCount, userCount);
-    } else {
-      // invalid user count -> maybe error?
-      nText = getResources().getString(R.string.card_current_users_unknown);
-    }
-    int iconRes;
-    if(userCount <= 0) {
-      iconRes = R.drawable.round_person_outline_24;
-    } else if(userCount == 1) {
-      iconRes = R.drawable.round_person_24;
-    } else if(userCount == 2) {
-      iconRes = R.drawable.round_people_24;
-    } else {
-      iconRes = R.drawable.round_groups_24;
-    }
+    String notificationText = MainActivity.getStatusForUserCount(this, userCount);
+    int iconRes = MainActivity.getIconForUserCount(this, userCount);
 
     // generate notification for foreground service
     Intent notificationIntent = new Intent(this, MainActivity.class);
@@ -233,7 +222,7 @@ public class BleScanService extends Service {
     builder
             .setContentIntent(pendingIntent)
             .setContentTitle(getText(R.string.notification_title))
-            .setContentText(nText)
+            .setContentText(notificationText)
             .setSmallIcon(iconRes);
 
     startForeground(1, builder.build());
