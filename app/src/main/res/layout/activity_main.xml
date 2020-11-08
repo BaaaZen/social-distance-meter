@@ -28,6 +28,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 app:layout_collapseMode="pin"
+                app:menu="@menu/main_menu"
                 app:popupTheme="@style/Theme.CWADetails.PopupOverlay" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>

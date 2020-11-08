@@ -6,6 +6,10 @@
     <string name="unknown_error">Unknown Error</string>
     <string name="national_cwa_name">Corona Warn App</string>
 
+    <!-- MENU: settings -->
+    <string name="menu_main_settings">Settings</string>
+    <string name="menu_main_about">About</string>
+
     <!-- CARD: current informations -->
     <string name="card_current_title">Current environment</string>
     <string name="card_current_waiting_scan_results">Waiting for scan results ...</string>

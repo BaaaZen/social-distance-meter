@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory android:title="@string/settings_category_scan">
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="settings_scan_active"
+            android:title="@string/settings_title_scan_active" />
+        <ListPreference
+            android:defaultValue="@string/settings_scan_period_default_value"
+            android:entries="@array/settings_scan_period_description"
+            android:entryValues="@array/settings_scan_period_values"
+            android:key="settings_scan_period"
+            android:title="@string/settings_title_scan_period" />
+    </PreferenceCategory>
+</PreferenceScreen>

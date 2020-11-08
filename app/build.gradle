@@ -49,4 +49,9 @@ dependencies {
     implementation "androidx.room:room-guava:$room_version"
     // optional - Test helpers
     testImplementation "androidx.room:room-testing:$room_version"
+
+    // preferences library
+    def preference_version = "1.1.1"
+    // Java language implementation
+    implementation "androidx.preference:preference:$preference_version"
 }

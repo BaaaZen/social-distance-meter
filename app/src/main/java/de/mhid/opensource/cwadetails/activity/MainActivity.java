@@ -20,6 +20,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -34,6 +36,26 @@ public class MainActivity extends AppCompatActivity {
 
   public static final int COUNT_ERROR_SCANNING_IN_PROGRESS = -1;
   public static final int COUNT_ERROR_UNABLE_TO_SCAN = -2;
+
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    getMenuInflater().inflate(R.menu.main_menu, menu);
+    return true;
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    // handle menu item selected
+    int selectedId = item.getItemId();
+
+    if(selectedId == R.id.menu_main_settings) {
+      Intent intent = new Intent(this, SettingsActivity.class);
+      startActivity(intent);
+      return true;
+    }
+
+    return super.onOptionsItemSelected(item);
+  }
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
