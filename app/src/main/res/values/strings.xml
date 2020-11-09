@@ -10,6 +10,25 @@
     <string name="menu_main_settings">Settings</string>
     <string name="menu_main_about">About</string>
 
+    <!-- SETTINGS -->
+    <string name="settings_category_scan">Scan settings</string>
+    <string name="settings_title_scan_active">Scanning enabled</string>
+    <string name="settings_title_scan_period">Scan period</string>
+    <string-array name="settings_list_scan_period_description">
+        <item>30 seconds</item>
+        <item>1 minute (recommended)</item>
+        <item>3 minutes</item>
+        <item>5 minutes</item>
+    </string-array>
+    <string name="settings_title_scan_location_active">Record location enabled</string>
+    <string name="settings_title_scan_location_period">Record location period</string>
+    <string-array name="settings_list_scan_location_period_description">
+        <item>Continuous</item>
+        <item>5 minutes</item>
+        <item>15 minutes (recommended)</item>
+        <item>Gathering detected</item>
+    </string-array>
+
     <!-- CARD: current informations -->
     <string name="card_current_title">Current environment</string>
     <string name="card_current_waiting_scan_results">Waiting for scan results ...</string>

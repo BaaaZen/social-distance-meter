@@ -22,9 +22,8 @@ import java.util.List;
 import java.util.UUID;
 
 public class BleScanner {
-  private static final long SCAN_PERIOD_ERROR_RETRY = 10000;
-  private static final long SCAN_PERIOD_NORMAL = 30000;
   private static final long SCAN_DURATION = 10000;
+  private static final long SCAN_PERIOD_ERROR_RETRY = 10000;
 
   private static final UUID UUID_ENF = UUID.fromString("0000fd6f-0000-1000-8000-00805f9b34fb");
   private static final UUID[] UUID_FILTER_LIST = new UUID[]{UUID_ENF};
@@ -38,37 +37,14 @@ public class BleScanner {
   private BleScanService service;
 
   private Handler handler = new Handler(Looper.myLooper());
-  private Boolean scanRunning = false;
-  private Boolean shutdown = false;
+  private boolean scanning = false;
+  private boolean running = false;
+  private long scanPeriod = 50000;
+  private boolean scanLocationEnabled = false;
+  private long scanLocationPeriod = 5*60000;
+  private boolean scanLocationOnGathering = false;
 
-  @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-  class BleScanCallback extends ScanCallback {
-    @Override
-    public void onScanResult(int callbackType, ScanResult result) {
-      super.onScanResult(callbackType, result);
-
-      service.scanResult(result.getDevice().getAddress(), result.getRssi(), result.getScanRecord().getServiceData(new ParcelUuid(UUID_ENF)));
-    }
-  }
-
-  public BleScanner(BleScanService service) {
-    this.service = service;
-
-    // schedule scan
-    scheduleScan(100);
-  }
-
-  protected void shutdown() {
-    shutdown = true;
-    synchronized (scanRunning) {
-      if(scanRunning) return;
-    }
-
-    // seems like we are waiting for scheduled scan -> abort schedule
-    handler.removeCallbacks(runScheduledScan);
-  }
-
-  private Runnable runScheduledScan = () -> {
+  private final Runnable runScheduledScan = () -> {
     Log.i("scheduleScan", "running now!");
     // check if app has location permission
     boolean hasLocationPermission = ActivityCompat.checkSelfPermission(service, Manifest.permission.ACCESS_FINE_LOCATION) ==
@@ -87,10 +63,74 @@ public class BleScanner {
     }
   };
 
-  private void scheduleScan(long waitDuration) {
-    if(shutdown) return;
+  @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+  class BleScanCallback extends ScanCallback {
+    @Override
+    public void onScanResult(int callbackType, ScanResult result) {
+      super.onScanResult(callbackType, result);
+
+      service.scanResult(result.getDevice().getAddress(), result.getRssi(), result.getScanRecord().getServiceData(new ParcelUuid(UUID_ENF)));
+    }
+  }
+
+  public BleScanner(BleScanService service) {
+    this.service = service;
+  }
+
+  protected synchronized void start() {
+    if(running) return;
+
+    // schedule scan
+    running = true;
+    scheduleScan(100);
+  }
+
+  protected synchronized void shutdown() {
+    if(!running) return;
+
+    // seems like we are waiting for scheduled scan -> abort schedule
+    running = false;
+    handler.removeCallbacks(runScheduledScan);
+  }
+
+  private synchronized boolean startScanning() {
+    if(scanning) return false;
+    scanning = true;
+    return true;
+  }
+
+  private synchronized boolean stopScanning() {
+    if(!scanning) return false;
+    scanning = false;
+    return true;
+  }
+
+  private synchronized void scheduleScan(long waitDuration) {
+    if(!running) return;
+
     Log.i("scheduleScan", "scheduling after " + waitDuration/1000 + "s");
-    handler.postDelayed(runScheduledScan, waitDuration);
+    boolean ok = handler.postDelayed(runScheduledScan, waitDuration);
+    if(!ok) {
+      Log.e(getClass().getSimpleName(), "Error scheduling scan!");
+      running = false;
+    }
+  }
+
+  protected synchronized void setPeriod(long p) {
+    scanPeriod = p - SCAN_DURATION;
+  }
+
+  private synchronized long getPeriodWaitTime() {
+    return scanPeriod;
+  }
+
+  protected synchronized void setScanLocationEnabled(boolean b) {
+    scanLocationEnabled = b;
+  }
+
+  protected synchronized void setScanLocationPeriod(long period, boolean onGathering) {
+    scanLocationPeriod = period;
+    scanLocationOnGathering = onGathering;
   }
 
   private void scan_Older() {
@@ -99,10 +139,8 @@ public class BleScanner {
 
   @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
   private void scan_Lollipop() {
-    synchronized (scanRunning) {
-      if(scanRunning) return;
-      scanRunning = true;
-    }
+    boolean ok1 = startScanning();
+    if(!ok1) return;
 
     // get bluetooth adapter
     if(bluetoothAdapter == null) {
@@ -113,9 +151,6 @@ public class BleScanner {
     if(bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
       // -> show error
       service.scanBluetoothError();
-      synchronized (scanRunning) {
-        scanRunning = false;
-      }
       scheduleScan(SCAN_PERIOD_ERROR_RETRY);
       return;
     }
@@ -153,21 +188,28 @@ public class BleScanner {
     service.scanBegin();
     bluetoothLeScanner.startScan(scanFilter, scanSettings, bleScanCallback);
 
-    // stop scan after x seconds
-    new Handler(Looper.myLooper()).postDelayed(() -> {
+    final Runnable afterScan = () -> {
       try {
         bluetoothLeScanner.flushPendingScanResults(bleScanCallback);
         bluetoothLeScanner.stopScan(bleScanCallback);
-        service.scanFinished();
       } finally {
-        synchronized (scanRunning) {
-          scanRunning = false;
-        }
+        boolean ok3 = stopScanning();
 
-        // re-schedule scan
-        scheduleScan(SCAN_PERIOD_NORMAL);
+        if(ok3) {
+          service.scanFinished();
+
+          // re-schedule scan
+          scheduleScan(getPeriodWaitTime());
+        }
       }
-    }, SCAN_DURATION);
+    };
+
+    // stop scan after x seconds
+    boolean ok2 = handler.postDelayed(afterScan, SCAN_DURATION);
+    if(!ok2) {
+      Log.e(getClass().getSimpleName(), "Error scheduling scan stop.");
+      afterScan.run();
+    }
   }
 
 }

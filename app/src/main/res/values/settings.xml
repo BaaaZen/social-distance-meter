@@ -1,20 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- settings keys -->
+    <string name="settings_key_scan_enabled">settings_scan_enabled</string>
+    <string name="settings_key_scan_period">settings_scan_period</string>
+    <string name="settings_key_scan_location_enabled">settings_scan_location_enabled</string>
+    <string name="settings_key_scan_location_period">settings_scan_location_period</string>
+
     <!-- settings: scan settings -->
-    <string name="settings_category_scan">Scan settings</string>
-    <string name="settings_title_scan_active">Scanning enabled</string>
-    <string name="settings_scan_period_default_value">1min</string>
-    <string-array name="settings_scan_period_values">
+    <string name="settings_list_scan_period_default_value">1min</string>
+    <string-array name="settings_list_scan_period_values">
         <item>30sec</item>
         <item>1min</item>
         <item>3min</item>
         <item>5min</item>
     </string-array>
-    <string-array name="settings_scan_period_description">
-        <item>30 seconds</item>
-        <item>1 minute (recommended)</item>
-        <item>3 minutes</item>
-        <item>5 minutes</item>
+
+    <string name="settings_list_scan_location_period_default_value">15min</string>
+    <string-array name="settings_list_scan_location_period_values">
+        <item>continuous</item>
+        <item>5min</item>
+        <item>15min</item>
+        <item>gathering</item>
     </string-array>
-    <string name="settings_title_scan_period">Scan period</string>
 </resources>

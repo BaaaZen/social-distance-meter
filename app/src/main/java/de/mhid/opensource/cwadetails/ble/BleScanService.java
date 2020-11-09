@@ -8,6 +8,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.IBinder;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
+import androidx.preference.PreferenceManager;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,10 +32,14 @@ import de.mhid.opensource.cwadetails.database.Database;
 
 public class BleScanService extends Service {
   private static final String NOTIFICATION_CHANNEL_ID = "ble_scan_notification_channel";
-
   public static final String INTENT_START_MAIN_ACTIVITY = "request_user_count";
 
   private BleScanner bleScanner = null;
+  private SharedPreferences sharedPreferences = null;
+
+  private SharedPreferences.OnSharedPreferenceChangeListener sharedPreferenceChangeListener = (sharedPreferences1, key) -> {
+    updateFromPreferences(key);
+  };
 
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
@@ -74,14 +80,78 @@ public class BleScanService extends Service {
     super.onCreate();
 
     bleScanner = new BleScanner(this);
+
+    sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+    sharedPreferences.registerOnSharedPreferenceChangeListener(sharedPreferenceChangeListener);
+
+    updateFromPreferences(null);
   }
 
   @Override
   public void onDestroy() {
     super.onDestroy();
 
+    sharedPreferences.unregisterOnSharedPreferenceChangeListener(sharedPreferenceChangeListener);
+    sharedPreferences = null;
+
     bleScanner.shutdown();
     bleScanner = null;
+  }
+
+  private void updateFromPreferences(String updatedKey) {
+    // scan enabled
+    if(updatedKey == null || updatedKey.equals(getString(R.string.settings_key_scan_enabled))) {
+      boolean scanEnabled = sharedPreferences.getBoolean(getString(R.string.settings_key_scan_enabled), true);
+      if(scanEnabled) {
+        bleScanner.start();
+      } else {
+        bleScanner.shutdown();
+        removeNotification();
+        return;
+      }
+    }
+
+    // scan period
+    if(updatedKey == null || updatedKey.equals(getString(R.string.settings_key_scan_period))) {
+      String scanPeriod = sharedPreferences.getString(getString(R.string.settings_key_scan_period), getString(R.string.settings_list_scan_period_default_value));
+      String scanPeriodValues[] = getResources().getStringArray(R.array.settings_list_scan_period_values);
+      long scanPeriodValue = 60000;
+      if (scanPeriod.equals(scanPeriodValues[0])) {
+        scanPeriodValue = 30000; // 30s
+      } else if (scanPeriod.equals(scanPeriodValues[1])) {
+        scanPeriodValue = 60000; // 1m
+      } else if (scanPeriod.equals(scanPeriodValues[2])) {
+        scanPeriodValue = 3 * 60000; // 3m
+      } else if (scanPeriod.equals(scanPeriodValues[3])) {
+        scanPeriodValue = 5 * 60000; // 5m
+      }
+      bleScanner.setPeriod(scanPeriodValue);
+    }
+
+    // scan location enabled
+    if(updatedKey == null || updatedKey.equals(getString(R.string.settings_key_scan_location_enabled))) {
+      boolean scanLocationEnabled = sharedPreferences.getBoolean(getString(R.string.settings_key_scan_location_enabled), false);
+      bleScanner.setScanLocationEnabled(scanLocationEnabled);
+    }
+
+    // scan location period
+    if(updatedKey == null || updatedKey.equals(getString(R.string.settings_key_scan_location_period))) {
+      String scanLocationPeriod = sharedPreferences.getString(getString(R.string.settings_key_scan_location_period), getString(R.string.settings_list_scan_location_period_default_value));
+      String scanLocationPeriodValues[] = getResources().getStringArray(R.array.settings_list_scan_location_period_values);
+      long scanLocationPeriodValue = 5 * 60000;
+      boolean scanLocationPeriodOnGathering = false;
+      if (scanLocationPeriod.equals(scanLocationPeriodValues[0])) {
+        scanLocationPeriodValue = 0;
+      } else if (scanLocationPeriod.equals(scanLocationPeriodValues[1])) {
+        scanLocationPeriodValue = 5 * 60000;
+      } else if (scanLocationPeriod.equals(scanLocationPeriodValues[2])) {
+        scanLocationPeriodValue = 15 * 60000;
+      } else if (scanLocationPeriod.equals(scanLocationPeriodValues[3])) {
+        scanLocationPeriodValue = 5 * 60000;
+        scanLocationPeriodOnGathering = true;
+      }
+      bleScanner.setScanLocationPeriod(scanLocationPeriodValue, scanLocationPeriodOnGathering);
+    }
   }
 
   @Nullable
@@ -195,6 +265,10 @@ public class BleScanService extends Service {
     // bluetooth disabled -> no results!
     recentUserCount = null;
     sendScanResultUserCount(MainActivity.COUNT_ERROR_UNABLE_TO_SCAN);
+  }
+
+  private void removeNotification() {
+    stopForeground(true);
   }
 
   private void updateNotification(int userCount) {

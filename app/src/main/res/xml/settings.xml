@@ -4,13 +4,28 @@
     <PreferenceCategory android:title="@string/settings_category_scan">
         <SwitchPreference
             android:defaultValue="true"
-            android:key="settings_scan_active"
+            android:key="@string/settings_key_scan_enabled"
             android:title="@string/settings_title_scan_active" />
         <ListPreference
-            android:defaultValue="@string/settings_scan_period_default_value"
-            android:entries="@array/settings_scan_period_description"
-            android:entryValues="@array/settings_scan_period_values"
-            android:key="settings_scan_period"
-            android:title="@string/settings_title_scan_period" />
+            android:defaultValue="@string/settings_list_scan_period_default_value"
+            android:entries="@array/settings_list_scan_period_description"
+            android:entryValues="@array/settings_list_scan_period_values"
+            android:key="@string/settings_key_scan_period"
+            android:title="@string/settings_title_scan_period"
+            android:dependency="@string/settings_key_scan_enabled"
+            android:summary="%s" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="@string/settings_key_scan_location_enabled"
+            android:title="@string/settings_title_scan_location_active"
+            android:dependency="@string/settings_key_scan_enabled" />
+        <ListPreference
+            android:defaultValue="@string/settings_list_scan_location_period_default_value"
+            android:entries="@array/settings_list_scan_location_period_description"
+            android:entryValues="@array/settings_list_scan_location_period_values"
+            android:key="@string/settings_key_scan_location_period"
+            android:title="@string/settings_title_scan_location_period"
+            android:dependency="@string/settings_key_scan_location_enabled"
+            android:summary="%s" />
     </PreferenceCategory>
 </PreferenceScreen>
