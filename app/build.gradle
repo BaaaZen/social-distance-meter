@@ -54,4 +54,7 @@ dependencies {
     def preference_version = "1.1.1"
     // Java language implementation
     implementation "androidx.preference:preference:$preference_version"
+
+    // protobuf
+    implementation "com.google.protobuf:protobuf-java:3.13.0"
 }
