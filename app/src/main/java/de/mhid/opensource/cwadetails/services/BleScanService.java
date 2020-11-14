@@ -1,4 +1,4 @@
-package de.mhid.opensource.cwadetails.ble;
+package de.mhid.opensource.cwadetails.services;
 
 import android.Manifest;
 import android.app.Notification;
@@ -27,6 +27,7 @@ import java.util.List;
 
 import de.mhid.opensource.cwadetails.R;
 import de.mhid.opensource.cwadetails.activity.MainActivity;
+import de.mhid.opensource.cwadetails.ble.BleScanner;
 import de.mhid.opensource.cwadetails.database.CwaToken;
 import de.mhid.opensource.cwadetails.database.Database;
 
@@ -49,7 +50,7 @@ public class BleScanService extends Service {
             PackageManager.PERMISSION_GRANTED;
 
     // get current user count
-    if(intent.getAction().equals(INTENT_START_MAIN_ACTIVITY)) {
+    if(intent.getAction() != null && intent.getAction().equals(INTENT_START_MAIN_ACTIVITY)) {
       if(hasLocationPermission) {
         // send update user count
         // -> do we have a current user count?
@@ -164,6 +165,7 @@ public class BleScanService extends Service {
   private class CwaScanResult {
     private List<Integer> rssiHistory = new ArrayList<>();
     public final byte[] token;
+    private Date timestamp = new Date();
 
     public CwaScanResult(byte[] token) {
       this.token = token;
@@ -184,6 +186,14 @@ public class BleScanService extends Service {
       return rssiSum / rssiItems;
     }
 
+    public long getRollingTimestamp() {
+      return timestamp.getTime() / (10*60*1000);
+    }
+
+    public Date getTimestamp() {
+      return timestamp;
+    }
+
     public String getHexToken() {
       char[] hexChars = new char[token.length * 2];
       for (int j = 0; j < token.length; j++) {
@@ -196,37 +206,29 @@ public class BleScanService extends Service {
   }
 
   private HashMap<String, CwaScanResult> scanResults = null;
-  private Date scanTimestamp = null;
   private Integer recentUserCount = null;
 
-  protected void scanBegin() {
-    Log.d("scanResults", "BEGIN");
+  public void scanBegin() {
+    Log.d(getClass().getSimpleName(), "scan begin");
     if(recentUserCount == null) {
       sendScanResultUserCount(MainActivity.COUNT_ERROR_SCANNING_IN_PROGRESS);
     }
 
     scanResults = new HashMap<>();
-    scanTimestamp = new Date();
   }
 
-  protected void scanResult(String mac, int rssi, byte[] data) {
-    Log.d("scanResults", "MAC = " + mac + ", RSSI = " + rssi + ", DATA = " + data);
+  public void scanResult(String mac, int rssi, byte[] data) {
+    Log.d(getClass().getSimpleName(), "scanResult: MAC = " + mac + ", RSSI = " + rssi);
     if(scanResults == null) return;
     if(!scanResults.containsKey(mac)) scanResults.put(mac, new CwaScanResult(data));
-    CwaScanResult device;
-    if(scanResults.containsKey(mac)) {
-      device = scanResults.get(mac);
-    } else {
-      device = new CwaScanResult(data);
-      scanResults.put(mac, device);
-    }
+    CwaScanResult device = scanResults.get(mac);
     device.addRssi(rssi);
   }
 
-  protected void scanFinished() {
-    Log.d("scanResults", "FINISHED");
-
+  public void scanFinished() {
     int userCount = scanResults.size();
+
+    Log.d(getClass().getSimpleName(), "scan finished, user count = " + userCount);
 
     // update recent user count
     recentUserCount = userCount;
@@ -244,24 +246,23 @@ public class BleScanService extends Service {
         CwaToken dbCwaToken = new CwaToken();
         dbCwaToken.mac = mac;
         dbCwaToken.rssi = scanResult.getRssi();
-        dbCwaToken.timestamp = scanTimestamp;
+        dbCwaToken.rollingTimestamp = scanResult.getRollingTimestamp();
+        dbCwaToken.timestamp = scanResult.getTimestamp();
         dbCwaToken.token = scanResult.getHexToken();
 
         // insert in database
         db.cwaDatabase().cwaTokenDao().insert(dbCwaToken);
       }
     });
-
-    Log.d("scanResults", "Count: " + scanResults.size());
   }
 
-  protected void scanPermissionError() {
+  public void scanPermissionError() {
     // no location permission -> no results!
     recentUserCount = null;
     sendScanResultUserCount(MainActivity.COUNT_ERROR_UNABLE_TO_SCAN);
   }
 
-  protected void scanBluetoothError() {
+  public void scanBluetoothError() {
     // bluetooth disabled -> no results!
     recentUserCount = null;
     sendScanResultUserCount(MainActivity.COUNT_ERROR_UNABLE_TO_SCAN);

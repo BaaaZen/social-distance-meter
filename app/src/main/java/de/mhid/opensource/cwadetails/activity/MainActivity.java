@@ -27,7 +27,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import de.mhid.opensource.cwadetails.R;
-import de.mhid.opensource.cwadetails.ble.BleScanService;
+import de.mhid.opensource.cwadetails.services.BleScanService;
+import de.mhid.opensource.cwadetails.services.DiagKeyUpdateService;
 
 public class MainActivity extends AppCompatActivity {
   public static final String INTENT_REQUEST_PERMISSION = "request_permission";
@@ -76,6 +77,17 @@ public class MainActivity extends AppCompatActivity {
       }
     });
 
+    // TODO: TEST
+    CardView cardCurrent = (CardView)findViewById(R.id.card_current);
+    cardCurrent.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        Intent diagKeyUpdateIntent = new Intent(MainActivity.this, DiagKeyUpdateService.class);
+        diagKeyUpdateIntent.setAction(DiagKeyUpdateService.INTENT_START_DIAG_KEY_UPDATE);
+        startService(diagKeyUpdateIntent);
+      }
+    });
+
     // click handler for permission card
     CardView cardPermissions = (CardView)findViewById(R.id.card_permissions);
     cardPermissions.setOnClickListener(new View.OnClickListener() {
@@ -114,6 +126,10 @@ public class MainActivity extends AppCompatActivity {
     Intent bleServiceIntent = new Intent(this, BleScanService.class);
     bleServiceIntent.setAction(BleScanService.INTENT_START_MAIN_ACTIVITY);
     startService(bleServiceIntent);
+
+    // start diag key updates
+    Intent diagKeyUpdateServiceIntent = new Intent(this, DiagKeyUpdateService.class);
+    startService(diagKeyUpdateServiceIntent);
   }
 
   private void requestUserCount() {

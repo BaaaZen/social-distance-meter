@@ -1,4 +1,4 @@
-package de.mhid.opensource.cwadetails.ble;
+package de.mhid.opensource.cwadetails.services;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -8,9 +8,14 @@ import android.util.Log;
 public class Autostart extends BroadcastReceiver {
   @Override
   public void onReceive(Context context, Intent intent) {
+    // start ble scanner
     Intent bleServiceIntent = new Intent(context, BleScanService.class);
     context.startService(bleServiceIntent);
 
-    Log.i("Autostart", "started");
+    // start diag key updates
+    Intent diagKeyUpdateServiceIntent = new Intent(context, DiagKeyUpdateService.class);
+    context.startService(diagKeyUpdateServiceIntent);
+
+    Log.i(getClass().getSimpleName(), "Autostart started");
   }
 }

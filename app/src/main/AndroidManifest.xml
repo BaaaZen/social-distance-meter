@@ -44,13 +44,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activity.MainActivity"/></activity>
 
-        <receiver android:name=".ble.Autostart">
+        <receiver android:name=".services.Autostart">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
 
-        <service android:name=".ble.BleScanService" android:foregroundServiceType="location"/>
+        <service android:name=".services.BleScanService" android:foregroundServiceType="location"/>
+        <service android:name=".services.DiagKeyUpdateService"/>
     </application>
 
 </manifest>

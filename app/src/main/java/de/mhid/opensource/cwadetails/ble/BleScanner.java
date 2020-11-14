@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import de.mhid.opensource.cwadetails.services.BleScanService;
+
 public class BleScanner {
   private static final long SCAN_DURATION = 10000;
   private static final long SCAN_PERIOD_ERROR_RETRY = 10000;
@@ -77,7 +79,7 @@ public class BleScanner {
     this.service = service;
   }
 
-  protected synchronized void start() {
+  public synchronized void start() {
     if(running) return;
 
     // schedule scan
@@ -85,7 +87,7 @@ public class BleScanner {
     scheduleScan(100);
   }
 
-  protected synchronized void shutdown() {
+  public synchronized void shutdown() {
     if(!running) return;
 
     // seems like we are waiting for scheduled scan -> abort schedule
@@ -116,7 +118,7 @@ public class BleScanner {
     }
   }
 
-  protected synchronized void setPeriod(long p) {
+  public synchronized void setPeriod(long p) {
     scanPeriod = p - SCAN_DURATION;
   }
 
@@ -124,11 +126,11 @@ public class BleScanner {
     return scanPeriod;
   }
 
-  protected synchronized void setScanLocationEnabled(boolean b) {
+  public synchronized void setScanLocationEnabled(boolean b) {
     scanLocationEnabled = b;
   }
 
-  protected synchronized void setScanLocationPeriod(long period, boolean onGathering) {
+  public synchronized void setScanLocationPeriod(long period, boolean onGathering) {
     scanLocationPeriod = period;
     scanLocationOnGathering = onGathering;
   }
