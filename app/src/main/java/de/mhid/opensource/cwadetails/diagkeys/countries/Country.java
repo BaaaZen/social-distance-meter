@@ -11,7 +11,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -19,7 +21,11 @@ import de.mhid.opensource.cwadetails.diagkeys.Downloader;
 import de.mhid.opensource.cwadetails.diagkeys.parser.TemporaryExposureKeyExportParser;
 
 public abstract class Country {
-    class CountryDownloadException extends Exception {
+    public final static Country[] countries = {
+            new Germany()
+    };
+
+    public class CountryDownloadException extends Exception {
         public CountryDownloadException(String s) { super(s); }
         public CountryDownloadException(String s, Throwable e) { super(s, e); }
     }
@@ -104,8 +110,20 @@ public abstract class Country {
         // TODO: check signature
 
         try {
-            return TemporaryExposureKeyExportParser.TemporaryExposureKeyExport.parseFrom(fileContent.get("export.bin").toByteArray());
+            ByteArrayInputStream bais = new ByteArrayInputStream(fileContent.get("export.bin").toByteArray());
+
+            // check header
+            byte[] header = new byte[16];
+            bais.read(header);
+            if(!Arrays.equals(header, "EK Export v1    ".getBytes())) {
+                throw new CountryDownloadException("File export.bin has invalid header");
+            }
+
+            return TemporaryExposureKeyExportParser.TemporaryExposureKeyExport.parseFrom(bais);
         } catch (InvalidProtocolBufferException e) {
+            // invalid export.bin file
+            throw new CountryDownloadException("Error while parsing export.bin file", e);
+        } catch (IOException e) {
             // invalid export.bin file
             throw new CountryDownloadException("Error while parsing export.bin file", e);
         }

@@ -28,7 +28,7 @@ import android.widget.TextView;
 
 import de.mhid.opensource.cwadetails.R;
 import de.mhid.opensource.cwadetails.services.BleScanService;
-import de.mhid.opensource.cwadetails.services.DiagKeyUpdateService;
+import de.mhid.opensource.cwadetails.services.DiagKeySyncService;
 
 public class MainActivity extends AppCompatActivity {
   public static final String INTENT_REQUEST_PERMISSION = "request_permission";
@@ -82,8 +82,8 @@ public class MainActivity extends AppCompatActivity {
     cardCurrent.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
-        Intent diagKeyUpdateIntent = new Intent(MainActivity.this, DiagKeyUpdateService.class);
-        diagKeyUpdateIntent.setAction(DiagKeyUpdateService.INTENT_START_DIAG_KEY_UPDATE);
+        Intent diagKeyUpdateIntent = new Intent(MainActivity.this, DiagKeySyncService.class);
+        diagKeyUpdateIntent.setAction(DiagKeySyncService.INTENT_START_DIAG_KEY_UPDATE);
         startService(diagKeyUpdateIntent);
       }
     });
@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
     startService(bleServiceIntent);
 
     // start diag key updates
-    Intent diagKeyUpdateServiceIntent = new Intent(this, DiagKeyUpdateService.class);
+    Intent diagKeyUpdateServiceIntent = new Intent(this, DiagKeySyncService.class);
     startService(diagKeyUpdateServiceIntent);
   }
 

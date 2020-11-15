@@ -9,7 +9,7 @@ import java.util.List;
 @Dao
 public interface CwaCountryFileDao {
     @Insert
-    void insert(CwaCountryFile countryFile);
+    long insert(CwaCountryFile countryFile);
 
     @Query("SELECT * FROM cwa_country_file WHERE country_id = :countryId")
     List<CwaCountryFile> getAllForCountry(long countryId);

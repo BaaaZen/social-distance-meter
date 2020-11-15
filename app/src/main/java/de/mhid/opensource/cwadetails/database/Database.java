@@ -6,6 +6,10 @@ import android.os.AsyncTask;
 import androidx.room.Room;
 
 public class Database {
+  public interface RunnableWithReturn<T> {
+    T run();
+  }
+
   private static Database instance = null;
   public static Database getInstance(Context ctx) {
     if(instance == null) instance = new Database(ctx);
@@ -33,6 +37,12 @@ public class Database {
     };
 
     AsyncTask.execute(r);
+  }
+
+  public <T> T runSync(RunnableWithReturn<T> runnable) {
+    synchronized (instance) {
+      return runnable.run();
+    }
   }
 
 }

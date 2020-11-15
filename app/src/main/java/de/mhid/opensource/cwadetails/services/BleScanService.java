@@ -30,6 +30,7 @@ import de.mhid.opensource.cwadetails.activity.MainActivity;
 import de.mhid.opensource.cwadetails.ble.BleScanner;
 import de.mhid.opensource.cwadetails.database.CwaToken;
 import de.mhid.opensource.cwadetails.database.Database;
+import de.mhid.opensource.cwadetails.utils.HexString;
 
 public class BleScanService extends Service {
   private static final String NOTIFICATION_CHANNEL_ID = "ble_scan_notification_channel";
@@ -161,7 +162,6 @@ public class BleScanService extends Service {
     return null;
   }
 
-  private final static char[] HEX_CONVERT_ARRAY = "0123456789ABCDEF".toCharArray();
   private class CwaScanResult {
     private List<Integer> rssiHistory = new ArrayList<>();
     public final byte[] token;
@@ -195,13 +195,7 @@ public class BleScanService extends Service {
     }
 
     public String getHexToken() {
-      char[] hexChars = new char[token.length * 2];
-      for (int j = 0; j < token.length; j++) {
-        int v = token[j] & 0xFF;
-        hexChars[j * 2] = HEX_CONVERT_ARRAY[v >>> 4];
-        hexChars[j * 2 + 1] = HEX_CONVERT_ARRAY[v & 0x0F];
-      }
-      return new String(hexChars);
+      return HexString.toHexString(token);
     }
   }
 
@@ -251,7 +245,7 @@ public class BleScanService extends Service {
         dbCwaToken.token = scanResult.getHexToken();
 
         // insert in database
-        db.cwaDatabase().cwaTokenDao().insert(dbCwaToken);
+        db.cwaDatabase().cwaToken().insert(dbCwaToken);
       }
     });
   }

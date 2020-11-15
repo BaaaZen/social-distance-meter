@@ -12,7 +12,7 @@ import java.util.Date;
 @Entity(
         tableName = "cwa_country_file",
         foreignKeys = @ForeignKey(entity = CwaCountry.class, parentColumns = "id", childColumns = "country_id", onDelete = ForeignKey.CASCADE),
-        indices = { @Index("country_id") }
+        indices = { @Index("country_id"), @Index(value = { "country_id", "filename" }, unique = true) }
 )
 public class CwaCountryFile {
     @PrimaryKey(autoGenerate = true)

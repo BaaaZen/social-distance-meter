@@ -51,7 +51,7 @@
         </receiver>
 
         <service android:name=".services.BleScanService" android:foregroundServiceType="location"/>
-        <service android:name=".services.DiagKeyUpdateService"/>
+        <service android:name=".services.DiagKeySyncService"/>
     </application>
 
 </manifest>

@@ -13,7 +13,7 @@ public class Autostart extends BroadcastReceiver {
     context.startService(bleServiceIntent);
 
     // start diag key updates
-    Intent diagKeyUpdateServiceIntent = new Intent(context, DiagKeyUpdateService.class);
+    Intent diagKeyUpdateServiceIntent = new Intent(context, DiagKeySyncService.class);
     context.startService(diagKeyUpdateServiceIntent);
 
     Log.i(getClass().getSimpleName(), "Autostart started");

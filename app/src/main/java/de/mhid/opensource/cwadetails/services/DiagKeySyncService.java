@@ -15,9 +15,9 @@ import androidx.work.WorkManager;
 
 import java.util.concurrent.TimeUnit;
 
-import de.mhid.opensource.cwadetails.diagkeys.DiagKeyUpdateWorker;
+import de.mhid.opensource.cwadetails.diagkeys.DiagKeySyncWorker;
 
-public class DiagKeyUpdateService extends Service {
+public class DiagKeySyncService extends Service {
     private final static String PERIODIC_WORK_NAME = "periodic_diag_key_update_work";
     private final static String ONE_TIME_WORK_NAME = "one_time_diag_key_update_work";
 
@@ -39,7 +39,7 @@ public class DiagKeyUpdateService extends Service {
         Constraints constraints = constraintBuilder.build();
 
         PeriodicWorkRequest workRequest =
-                new PeriodicWorkRequest.Builder(DiagKeyUpdateWorker.class, 3, TimeUnit.HOURS, 2, TimeUnit.HOURS)
+                new PeriodicWorkRequest.Builder(DiagKeySyncWorker.class, 3, TimeUnit.HOURS, 2, TimeUnit.HOURS)
                         .setConstraints(constraints)
                         .setInitialDelay(5, TimeUnit.MINUTES)
                         .build();
@@ -50,7 +50,7 @@ public class DiagKeyUpdateService extends Service {
 
     private void startOneTimeWork() {
         OneTimeWorkRequest workRequest =
-                new OneTimeWorkRequest.Builder(DiagKeyUpdateWorker.class)
+                new OneTimeWorkRequest.Builder(DiagKeySyncWorker.class)
                     .build();
 
         WorkManager.getInstance(this)
