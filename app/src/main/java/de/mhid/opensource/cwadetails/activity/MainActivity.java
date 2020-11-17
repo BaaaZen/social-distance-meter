@@ -29,6 +29,7 @@ import android.widget.TextView;
 import de.mhid.opensource.cwadetails.R;
 import de.mhid.opensource.cwadetails.services.BleScanService;
 import de.mhid.opensource.cwadetails.services.DiagKeySyncService;
+import de.mhid.opensource.cwadetails.views.HistoryGraphView;
 
 public class MainActivity extends AppCompatActivity {
   public static final String INTENT_REQUEST_PERMISSION = "request_permission";
@@ -85,6 +86,9 @@ public class MainActivity extends AppCompatActivity {
         Intent diagKeyUpdateIntent = new Intent(MainActivity.this, DiagKeySyncService.class);
         diagKeyUpdateIntent.setAction(DiagKeySyncService.INTENT_START_DIAG_KEY_UPDATE);
         startService(diagKeyUpdateIntent);
+
+        HistoryGraphView hgv = (HistoryGraphView)findViewById(R.id.current_history);
+        hgv.update();
       }
     });
 
