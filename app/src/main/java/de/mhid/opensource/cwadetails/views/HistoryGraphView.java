@@ -1,5 +1,6 @@
 package de.mhid.opensource.cwadetails.views;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -7,7 +8,6 @@ import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Shader;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.Nullable;
@@ -23,6 +23,10 @@ import de.mhid.opensource.cwadetails.database.Database;
 
 public class HistoryGraphView extends View {
     private List<CwaTokenStatistics> statisticsList = null;
+    private Date lastUpdateTimestamp = null;
+
+    private final ArrayList<Integer> colors = new ArrayList<>();
+    private final HashSet<String> mac = new HashSet<>();
 
     private Paint pBlockDiagram;
     private Paint pText;
@@ -37,6 +41,8 @@ public class HistoryGraphView extends View {
         super(context, attrs);
 
         init();
+
+        update();
     }
 
     private void init() {
@@ -73,7 +79,7 @@ public class HistoryGraphView extends View {
         // calc 5 minute slot width
         float slotWidth = (float)width / (6*6);
 
-        Date currentDate = new Date();
+        @SuppressLint("DrawAllocation") Date currentDate = new Date();
         Calendar cal = Calendar.getInstance();
         cal.setTime(currentDate);
         float firstShift = (float)cal.get(Calendar.MINUTE)/10*slotWidth;
@@ -99,7 +105,6 @@ public class HistoryGraphView extends View {
         int maxItemsPerRollingTimestamp = 0;
         if(statisticsList != null) {
             long currentRollingTimestamp = 0;
-            HashSet<String> mac = new HashSet<>();
             for (CwaTokenStatistics statistics : statisticsList) {
                 if (statistics.rollingTimestamp != currentRollingTimestamp) {
                     if (currentRollingTimestamp != 0 && mac.size() > maxItemsPerRollingTimestamp)
@@ -118,8 +123,6 @@ public class HistoryGraphView extends View {
         float rollingBlockShift = (float)(cal.get(Calendar.MINUTE)%10)/10*slotWidth;
         long startRollingTimestamp = currentDate.getTime()/(1000*60*10);
         long currentRollingTimestamp = 0;
-        ArrayList<Integer> colors = new ArrayList<>();
-        HashSet<String> mac = new HashSet<>();
         float blockX = 0;
         int alpha = 255;
         for(CwaTokenStatistics statistics : statisticsList) {
@@ -193,15 +196,17 @@ public class HistoryGraphView extends View {
     public void update() {
         Database db = Database.getInstance(getContext());
 
-        db.runAsync(new Runnable() {
-            @Override
-            public void run() {
-                long currentRollingTimestamp = new Date().getTime()/(1000*60*10);
-                List<CwaTokenStatistics> statisticsList = db.cwaDatabase().cwaToken().getStatistics(currentRollingTimestamp-6*6, currentRollingTimestamp);
-                setStatisticsList(statisticsList);
+        Date currentTimestamp = new Date();
+        // update only every 30 seconds
+        if(lastUpdateTimestamp != null && lastUpdateTimestamp.getTime() + 30*1000 > currentTimestamp.getTime()) return;
+        lastUpdateTimestamp = currentTimestamp;
 
-                HistoryGraphView.this.invalidate();
-            }
+        db.runAsync(() -> {
+            long currentRollingTimestamp = currentTimestamp.getTime()/(1000*60*10);
+            List<CwaTokenStatistics> statisticsList = db.cwaDatabase().cwaToken().getStatistics(currentRollingTimestamp-6*6, currentRollingTimestamp);
+            setStatisticsList(statisticsList);
+
+            HistoryGraphView.this.invalidate();
         });
     }
 

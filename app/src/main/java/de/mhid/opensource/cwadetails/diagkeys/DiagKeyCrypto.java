@@ -40,7 +40,7 @@ public class DiagKeyCrypto {
     private byte[] getRpiKey() {
         if(rpiKey == null) {
             HKDF hkdf = HKDF.fromHmacSha256();
-            rpiKey = hkdf.extractAndExpand(HexString.toByteArray(cwaDiagKey.keyData), null, "EN-RPIK".getBytes(), 16);
+            rpiKey = hkdf.extractAndExpand((byte[])null, HexString.toByteArray(cwaDiagKey.keyData), "EN-RPIK".getBytes(), 16);
         }
         return rpiKey;
     }
@@ -57,7 +57,7 @@ public class DiagKeyCrypto {
     }
 
     private byte[] getRpiForRollingTimestamp(long rollingTimestamp) throws CryptoError {
-        if(calculatedRollingTimestamp != rollingTimestamp) {
+        if(calculatedRollingTimestamp == null || calculatedRollingTimestamp != rollingTimestamp) {
             // recalculate
             byte[] data = ByteBuffer.allocate(16)
                 .order(ByteOrder.LITTLE_ENDIAN)
@@ -67,15 +67,17 @@ public class DiagKeyCrypto {
                 .array();
 
             calculatedRpi = aesEncrypt(getRpiKey(), data);
+            calculatedRollingTimestamp = rollingTimestamp;
         }
 
         return calculatedRpi;
     }
 
     public boolean isTokenMatching(CwaToken cwaToken) throws CryptoError {
-        byte[] rpi = HexString.toByteArray(cwaToken.token.substring(0, 16*2));
+        byte[] rpiFromToken = HexString.toByteArray(cwaToken.token.substring(0, 16*2));
 //        byte[] aem = HexString.toByteArray(cwaToken.token.substring(16*2));
+        byte[] rpiFromDiagKey = getRpiForRollingTimestamp(cwaToken.rollingTimestamp);
 
-        return Arrays.equals(rpi, getRpiForRollingTimestamp(cwaToken.rollingTimestamp));
+        return Arrays.equals(rpiFromToken, rpiFromDiagKey);
     }
 }

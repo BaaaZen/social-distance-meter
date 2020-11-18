@@ -294,6 +294,8 @@ public class DiagKeySyncWorker extends Worker {
         List<CwaToken> updateTokens = new ArrayList<>();
         List<CwaDiagKey> updateDiagKeys = new ArrayList<>();
 
+        Log.d("DiagKeys", "rollingStartIntervalNumber: " + timeslotDiagKeys.referenceDiagKey.rollingStartIntervalNumber + " rollingPeriod: " + timeslotDiagKeys.referenceDiagKey.rollingPeriod + " Keys#: " + timeslotDiagKeys.diagKeys.size() + " Tokens#: " + timeslotTokens.tokens.size());
+
         boolean success = true;
 
         try {

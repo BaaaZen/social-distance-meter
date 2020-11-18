@@ -86,9 +86,6 @@ public class MainActivity extends AppCompatActivity {
         Intent diagKeyUpdateIntent = new Intent(MainActivity.this, DiagKeySyncService.class);
         diagKeyUpdateIntent.setAction(DiagKeySyncService.INTENT_START_DIAG_KEY_UPDATE);
         startService(diagKeyUpdateIntent);
-
-        HistoryGraphView hgv = (HistoryGraphView)findViewById(R.id.current_history);
-        hgv.update();
       }
     });
 
@@ -110,6 +107,9 @@ public class MainActivity extends AppCompatActivity {
         if(intent != null) {
           int count = intent.getIntExtra(INTENT_SCAN_RESULT_COUNT__COUNT, -1);
           updateUserCount(count);
+
+          HistoryGraphView hgv = (HistoryGraphView)findViewById(R.id.current_history);
+          hgv.update();
         }
       }
     };
