@@ -174,9 +174,11 @@ public class HistoryGraphView extends View {
         if(colors.size() == 1) {
             pBlockDiagram.setColor(colors.get(0));
         } else {
-            int[] colorArray = new int[colors.size()];
+            int[] colorArray = new int[colors.size()+2];
+            colorArray[0] = colors.get(0);
+            colorArray[colors.size()+1] = colors.get(colors.size()-1);
             for (int i = 0; i < colors.size(); i++) {
-                colorArray[i] = colors.get(i);
+                colorArray[i+1] = colors.get(i);
             }
 
             pBlockDiagram.setShader(new LinearGradient(left, bottom, left, top, colorArray, null, Shader.TileMode.REPEAT));
