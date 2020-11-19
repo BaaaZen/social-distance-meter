@@ -17,4 +17,7 @@ public interface CwaDiagKeyDao {
 
     @Query("SELECT * FROM cwa_diag_key WHERE (rolling_start_interval_number >= :minRollingTimestamp OR rolling_start_interval_number + rolling_period > :minRollingTimestamp) AND flag_checked = 0 ORDER BY rolling_start_interval_number ASC, rolling_period ASC")
     List<CwaDiagKey> getUncheckedInRollingSection(long minRollingTimestamp);
+
+    @Query("SELECT COUNT(*) as count FROM cwa_diag_key")
+    CwaDiagKeyCount getCount();
 }

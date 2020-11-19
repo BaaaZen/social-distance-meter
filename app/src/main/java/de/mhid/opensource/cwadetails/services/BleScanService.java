@@ -13,7 +13,6 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
@@ -34,6 +33,7 @@ import de.mhid.opensource.cwadetails.utils.HexString;
 
 public class BleScanService extends Service {
   private static final String NOTIFICATION_CHANNEL_ID = "ble_scan_notification_channel";
+
   public static final String INTENT_START_MAIN_ACTIVITY = "request_user_count";
 
   private BleScanner bleScanner = null;

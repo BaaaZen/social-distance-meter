@@ -22,4 +22,7 @@
         <item>15min</item>
         <item>gathering</item>
     </string-array>
+
+    <!-- hidden/internal setting keys -->
+    <string name="internal_settings_key_last_scan_timestamp">internal_settings_key_last_scan_timestamp</string>
 </resources>

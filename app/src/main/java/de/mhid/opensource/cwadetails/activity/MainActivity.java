@@ -27,6 +27,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import de.mhid.opensource.cwadetails.R;
+import de.mhid.opensource.cwadetails.activity.maincards.CardRisks;
 import de.mhid.opensource.cwadetails.services.BleScanService;
 import de.mhid.opensource.cwadetails.services.DiagKeySyncService;
 import de.mhid.opensource.cwadetails.views.HistoryGraphView;
@@ -39,25 +40,7 @@ public class MainActivity extends AppCompatActivity {
   public static final int COUNT_ERROR_SCANNING_IN_PROGRESS = -1;
   public static final int COUNT_ERROR_UNABLE_TO_SCAN = -2;
 
-  @Override
-  public boolean onCreateOptionsMenu(Menu menu) {
-    getMenuInflater().inflate(R.menu.main_menu, menu);
-    return true;
-  }
-
-  @Override
-  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-    // handle menu item selected
-    int selectedId = item.getItemId();
-
-    if(selectedId == R.id.menu_main_settings) {
-      Intent intent = new Intent(this, SettingsActivity.class);
-      startActivity(intent);
-      return true;
-    }
-
-    return super.onOptionsItemSelected(item);
-  }
+  private CardRisks cardRisks = null;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -69,25 +52,7 @@ public class MainActivity extends AppCompatActivity {
     CollapsingToolbarLayout toolBarLayout = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
     toolBarLayout.setTitle(getTitle());
 
-    FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-    fab.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View view) {
-        Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show();
-      }
-    });
-
-    // TODO: TEST
-    CardView cardCurrent = (CardView)findViewById(R.id.card_current);
-    cardCurrent.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        Intent diagKeyUpdateIntent = new Intent(MainActivity.this, DiagKeySyncService.class);
-        diagKeyUpdateIntent.setAction(DiagKeySyncService.INTENT_START_DIAG_KEY_UPDATE);
-        startService(diagKeyUpdateIntent);
-      }
-    });
+    cardRisks = new CardRisks(this);
 
     // click handler for permission card
     CardView cardPermissions = (CardView)findViewById(R.id.card_permissions);
@@ -134,6 +99,26 @@ public class MainActivity extends AppCompatActivity {
     // start diag key updates
     Intent diagKeyUpdateServiceIntent = new Intent(this, DiagKeySyncService.class);
     startService(diagKeyUpdateServiceIntent);
+  }
+
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    getMenuInflater().inflate(R.menu.main_menu, menu);
+    return true;
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    // handle menu item selected
+    int selectedId = item.getItemId();
+
+    if(selectedId == R.id.menu_main_settings) {
+      Intent intent = new Intent(this, SettingsActivity.class);
+      startActivity(intent);
+      return true;
+    }
+
+    return super.onOptionsItemSelected(item);
   }
 
   private void requestUserCount() {

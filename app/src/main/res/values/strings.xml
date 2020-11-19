@@ -52,6 +52,14 @@
     <string name="card_permissions_description_location_background">The purpose of this app is to scan and log tokens sent out of the %1$s via Bluetooth Low Energy (BLE).\nTo be able to collect data from BLE the app requires the permission to access location services.\n\nThe app without the permission to access location services is useless.\nTo be able to scan in background when this app is not active, the permission "%2$s" is required.</string>
     <string name="card_permissions_command_location_background">Request permission "%1$s"</string>
 
+    <!-- CARD: risks -->
+    <string name="card_risks_title">Risks</string>
+    <string name="card_risks_last_update_never">Never synchronized</string>
+    <string name="card_risks_last_update_date">Last synchronization: %1$s</string>
+    <string name="card_risks_diag_key_count"># of diagnosis keys: %1$d</string>
+    <string name="card_risks_start_sync_command">Synchronize diagnosis keys</string>
+    <string name="card_risks_no_risk_caption">No risk found</string>
+
     <!--  notification  -->
     <string name="notification_title">CWA Details</string>
 </resources>

@@ -1,12 +1,18 @@
 package de.mhid.opensource.cwadetails.diagkeys;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.preference.PreferenceManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
+import java.text.DateFormat;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -14,6 +20,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
+import de.mhid.opensource.cwadetails.R;
+import de.mhid.opensource.cwadetails.activity.maincards.CardRisks;
 import de.mhid.opensource.cwadetails.database.CwaCountry;
 import de.mhid.opensource.cwadetails.database.CwaCountryFile;
 import de.mhid.opensource.cwadetails.database.CwaDiagKey;
@@ -22,6 +30,8 @@ import de.mhid.opensource.cwadetails.database.CwaTokenMinRollingTimestamp;
 import de.mhid.opensource.cwadetails.database.Database;
 import de.mhid.opensource.cwadetails.diagkeys.countries.Country;
 import de.mhid.opensource.cwadetails.diagkeys.parser.TemporaryExposureKeyExportParser;
+import de.mhid.opensource.cwadetails.services.BleScanService;
+import de.mhid.opensource.cwadetails.services.DiagKeySyncService;
 import de.mhid.opensource.cwadetails.utils.HexString;
 
 public class DiagKeySyncWorker extends Worker {
@@ -91,8 +101,12 @@ public class DiagKeySyncWorker extends Worker {
     }
 
 
+    private SharedPreferences sharedPreferences = null;
+
     public DiagKeySyncWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
+
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
     @NonNull
@@ -118,6 +132,18 @@ public class DiagKeySyncWorker extends Worker {
 
             Log.i(getClass().getSimpleName(), "Work is done with success: " + success);
             if (success) {
+                String date = DateFormat.getDateInstance(DateFormat.MEDIUM).format(new Date());
+
+                sharedPreferences
+                        .edit()
+                        .putString(getApplicationContext().getString(R.string.internal_settings_key_last_scan_timestamp), date)
+                        .apply();
+
+                // trigger update of risk dialog via intent
+                Intent sndGetUpdates = new Intent(getApplicationContext(), DiagKeySyncService.class);
+                sndGetUpdates.setAction(DiagKeySyncService.INTENT_GET_UPDATES);
+                getApplicationContext().startService(sndGetUpdates);
+
                 return Result.success();
             } else {
                 return Result.failure();
