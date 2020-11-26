@@ -323,7 +323,7 @@ public class DiagKeySyncWorker extends Worker {
                 CwaDiagKey diagKey = diagKeyCrypto.getDiagKey();
                 for (CwaToken token : timeslotTokens.getTokens()) {
                     if(token.diagKey != null) continue;
-                    if (diagKeyCrypto.isTokenMatching(token)) {
+                    if (diagKeyCrypto.isTokenMatching(token.token, token.rollingTimestamp)) {
                         // matching key!
                         token.diagKey = diagKey.id;
                         updateTokens.add(token);

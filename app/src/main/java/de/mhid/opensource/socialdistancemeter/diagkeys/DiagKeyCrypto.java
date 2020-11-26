@@ -2,6 +2,7 @@ package de.mhid.opensource.socialdistancemeter.diagkeys;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
@@ -10,12 +11,11 @@ import java.util.Arrays;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
-import at.favre.lib.crypto.HKDF;
 import de.mhid.opensource.socialdistancemeter.database.CwaDiagKey;
-import de.mhid.opensource.socialdistancemeter.database.CwaToken;
 import de.mhid.opensource.socialdistancemeter.utils.HexString;
 
 public class DiagKeyCrypto {
@@ -37,10 +37,45 @@ public class DiagKeyCrypto {
         return cwaDiagKey;
     }
 
-    private byte[] getRpiKey() {
+    private byte[] hmacSHA256(byte[] key, byte[] message) throws CryptoError {
+        try {
+            Mac mac = Mac.getInstance("HmacSHA256");
+            SecretKeySpec secretKeySpec = new SecretKeySpec(key, "HmacSHA256");
+            mac.init(secretKeySpec);
+            return mac.doFinal(message);
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+            throw new CryptoError(e);
+        }
+    }
+
+    // algorithm inspired by https://en.wikipedia.org/wiki/HKDF#Example:_Python_implementation
+    private byte[] hkdf(byte[] key, byte[] salt, byte[] info, int outputLength) throws CryptoError {
+        final int HASH_LEN = 32;
+        if(salt == null) salt = new byte[outputLength];
+        byte[] prk = hmacSHA256(salt, key);
+        int times = outputLength / HASH_LEN + (outputLength % HASH_LEN == 0 ? 0 : 1);
+        byte[] t = new byte[0];
+        ByteBuffer okm = ByteBuffer.allocate(outputLength);
+        for(int i=0; i<times; i++) {
+            byte[] imsg = ByteBuffer.allocate(t.length + info.length + 1)
+                    .put(t)
+                    .put(info)
+                    .put((byte)(i+1))
+                    .array();
+            t = hmacSHA256(prk, imsg);
+            if(outputLength-okm.position() >= HASH_LEN) {
+                okm.put(t);
+            } else {
+                okm.put(t, 0, outputLength-okm.position());
+            }
+        }
+        return okm.array();
+    }
+
+
+    private byte[] getRpiKey() throws CryptoError {
         if(rpiKey == null) {
-            HKDF hkdf = HKDF.fromHmacSha256();
-            rpiKey = hkdf.extractAndExpand((byte[])null, HexString.toByteArray(cwaDiagKey.keyData), "EN-RPIK".getBytes(), 16);
+            rpiKey = hkdf(HexString.toByteArray(cwaDiagKey.keyData), null, "EN-RPIK".getBytes(StandardCharsets.UTF_8), 16);
         }
         return rpiKey;
     }
@@ -48,7 +83,7 @@ public class DiagKeyCrypto {
     private byte[] aesEncrypt(byte[] key, byte[] data) throws CryptoError {
         Key aesKey = new SecretKeySpec(key, "AES");
         try {
-            Cipher cipher = Cipher.getInstance("AES");
+            Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
             cipher.init(Cipher.ENCRYPT_MODE, aesKey);
             return cipher.doFinal(data);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
@@ -61,7 +96,7 @@ public class DiagKeyCrypto {
             // recalculate
             byte[] data = ByteBuffer.allocate(16)
                 .order(ByteOrder.LITTLE_ENDIAN)
-                .put("EN-RPI".getBytes())
+                .put("EN-RPI".getBytes(StandardCharsets.UTF_8))
                 .put(new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
                 .putInt((int) (rollingTimestamp & 0xffffffffL))
                 .array();
@@ -73,10 +108,13 @@ public class DiagKeyCrypto {
         return calculatedRpi;
     }
 
-    public boolean isTokenMatching(CwaToken cwaToken) throws CryptoError {
-        byte[] rpiFromToken = HexString.toByteArray(cwaToken.token.substring(0, 16*2));
-//        byte[] aem = HexString.toByteArray(cwaToken.token.substring(16*2));
-        byte[] rpiFromDiagKey = getRpiForRollingTimestamp(cwaToken.rollingTimestamp);
+    public boolean isTokenMatching(String token, long rollingTimestamp) throws CryptoError {
+        String rpi = token.substring(0, 32);
+//        String aem = token.substring(32);
+
+        byte[] rpiFromToken = HexString.toByteArray(rpi);
+//        byte[] aemKey = HexString.toByteArray(aem);
+        byte[] rpiFromDiagKey = getRpiForRollingTimestamp(rollingTimestamp);
 
         return Arrays.equals(rpiFromToken, rpiFromDiagKey);
     }
