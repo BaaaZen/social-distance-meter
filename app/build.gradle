@@ -7,7 +7,7 @@ android {
     buildToolsVersion "30.0.2"
 
     defaultConfig {
-        applicationId "de.mhid.opensource.cwadetails"
+        applicationId "de.mhid.opensource.socialdistancemeter"
         minSdkVersion 19
         targetSdkVersion 30
         versionCode 1

@@ -1,2 +1,2 @@
 include ':app'
-rootProject.name = "CWA Details"
+rootProject.name = "Social Distance Meter"

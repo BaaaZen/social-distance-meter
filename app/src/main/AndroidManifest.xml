@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="de.mhid.opensource.cwadetails">
+    package="de.mhid.opensource.socialdistancemeter">
 
     <!--  required for continuous background scanning  -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
@@ -25,34 +25,34 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_social_distance_meter_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.CWADetails">
+        android:theme="@style/Theme.SocialDistanceMeter">
         <activity
-            android:name=".activity.MainActivity"
+            android:name="de.mhid.opensource.socialdistancemeter.activity.MainActivity"
             android:label="@string/title_activity_main"
-            android:theme="@style/Theme.CWADetails.NoActionBar">
+            android:theme="@style/Theme.SocialDistanceMeter.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.SettingsActivity"
+        <activity android:name="de.mhid.opensource.socialdistancemeter.activity.SettingsActivity"
             android:label="@string/menu_main_settings"
-            android:parentActivityName=".activity.MainActivity">
+            android:parentActivityName="de.mhid.opensource.socialdistancemeter.activity.MainActivity">
 
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activity.MainActivity"/>
+                android:value="de.mhid.opensource.socialdistancemeter.activity.MainActivity"/>
         </activity>
 
-        <receiver android:name=".services.Autostart">
+        <receiver android:name="de.mhid.opensource.socialdistancemeter.services.Autostart">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
 
-        <service android:name=".services.BleScanService" android:foregroundServiceType="location"/>
-        <service android:name=".services.DiagKeySyncService"/>
+        <service android:name="de.mhid.opensource.socialdistancemeter.services.BleScanService" android:foregroundServiceType="location"/>
+        <service android:name="de.mhid.opensource.socialdistancemeter.services.DiagKeySyncService"/>
     </application>
 
 </manifest>
