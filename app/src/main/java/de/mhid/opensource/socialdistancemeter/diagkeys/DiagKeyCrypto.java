@@ -1,5 +1,7 @@
 package de.mhid.opensource.socialdistancemeter.diagkeys;
 
+import android.annotation.SuppressLint;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
@@ -20,7 +22,7 @@ import de.mhid.opensource.socialdistancemeter.database.CwaDiagKey;
 import de.mhid.opensource.socialdistancemeter.utils.HexString;
 
 public class DiagKeyCrypto {
-    class CryptoError extends Exception {
+    static class CryptoError extends Exception {
         public CryptoError(Throwable t) { super(t); }
     }
 
@@ -83,7 +85,7 @@ public class DiagKeyCrypto {
     private byte[] aesEncrypt(byte[] key, byte[] data) throws CryptoError {
         Key aesKey = new SecretKeySpec(key, "AES");
         try {
-            Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
+            @SuppressLint("GetInstance") Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
             cipher.init(Cipher.ENCRYPT_MODE, aesKey);
             return cipher.doFinal(data);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {

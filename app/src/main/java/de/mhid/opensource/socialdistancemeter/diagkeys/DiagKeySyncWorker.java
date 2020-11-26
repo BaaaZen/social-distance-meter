@@ -56,9 +56,9 @@ public class DiagKeySyncWorker extends Worker {
         }
     }
 
-    class TimeslotDiagKeys {
-        private CwaDiagKey referenceDiagKey;
-        private List<DiagKeyCrypto> diagKeys = new ArrayList<>();
+    static class TimeslotDiagKeys {
+        private final CwaDiagKey referenceDiagKey;
+        private final List<DiagKeyCrypto> diagKeys = new ArrayList<>();
         public TimeslotDiagKeys(CwaDiagKey referenceDiagKey) {
             this.referenceDiagKey = referenceDiagKey;
         }
@@ -76,9 +76,9 @@ public class DiagKeySyncWorker extends Worker {
         }
     }
 
-    class TimeslotTokens {
-        private CwaToken referenceToken;
-        private List<CwaToken> tokens = new ArrayList<>();
+    static class TimeslotTokens {
+        private final CwaToken referenceToken;
+        private final List<CwaToken> tokens = new ArrayList<>();
         public TimeslotTokens(CwaToken referenceToken) {
             this.referenceToken = referenceToken;
         }
@@ -97,7 +97,7 @@ public class DiagKeySyncWorker extends Worker {
     }
 
 
-    private SharedPreferences sharedPreferences = null;
+    private final SharedPreferences sharedPreferences;
 
     public DiagKeySyncWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);

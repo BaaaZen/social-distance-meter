@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.text.Html;
 import android.view.View;
 import android.widget.TextView;
 
@@ -86,7 +87,7 @@ public class CardRisks {
 
     private void setLastUpdateDetails(String s) {
         TextView lastUpdateDetails = mainActivity.findViewById(R.id.card_risks_last_update_details);
-        lastUpdateDetails.setText(s);
+        lastUpdateDetails.setText(Html.fromHtml(s));
     }
 
     private void setDiagKeyCount(int count) {
@@ -95,7 +96,8 @@ public class CardRisks {
             blockDiagKeyCount.setVisibility(View.GONE);
         } else {
             TextView diagKeyDetails = mainActivity.findViewById(R.id.card_risks_diag_keys_details);
-            diagKeyDetails.setText(mainActivity.getString(R.string.card_risks_diag_key_count, count));
+            String s = mainActivity.getString(R.string.card_risks_diag_key_count, count);
+            diagKeyDetails.setText(Html.fromHtml(s));
 
             blockDiagKeyCount.setVisibility(View.VISIBLE);
         }

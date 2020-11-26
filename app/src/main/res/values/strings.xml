@@ -55,8 +55,8 @@
     <!-- CARD: risks -->
     <string name="card_risks_title">Risks</string>
     <string name="card_risks_last_update_never">Never synchronized</string>
-    <string name="card_risks_last_update_date">Last synchronization: %1$s</string>
-    <string name="card_risks_diag_key_count"># of diagnosis keys: %1$d</string>
+    <string name="card_risks_last_update_date">Last synchronization: <b>%1$s</b></string>
+    <string name="card_risks_diag_key_count"># of diagnosis keys: <b>%1$d</b></string>
     <string name="card_risks_start_sync_command">Synchronize diagnosis keys</string>
     <string name="card_risks_no_risk_caption">No risk found</string>
 
