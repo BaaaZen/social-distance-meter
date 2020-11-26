@@ -59,6 +59,9 @@
     <string name="card_risks_diag_key_count"># of diagnosis keys: <b>%1$d</b></string>
     <string name="card_risks_start_sync_command">Synchronize diagnosis keys</string>
     <string name="card_risks_no_risk_caption">No risk found</string>
+    <string name="card_risks_sync_status_starting">Starting to sync ...</string>
+    <string name="card_risks_sync_status_download_country">Downloading keys for %1$s</string>
+    <string name="card_risks_sync_status_comparing">Comparing diagnosis keys (%1$d%%)</string>
 
     <!--  notification  -->
     <string name="notification_title">Social Distance Meter</string>

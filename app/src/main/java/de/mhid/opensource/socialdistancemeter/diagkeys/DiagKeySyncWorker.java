@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 import de.mhid.opensource.socialdistancemeter.R;
+import de.mhid.opensource.socialdistancemeter.activity.maincards.CardRisks;
 import de.mhid.opensource.socialdistancemeter.database.CwaCountry;
 import de.mhid.opensource.socialdistancemeter.database.CwaCountryFile;
 import de.mhid.opensource.socialdistancemeter.database.CwaDiagKey;
@@ -118,6 +119,8 @@ public class DiagKeySyncWorker extends Worker {
         }
 
         try {
+            sendIntentSyncStatusUpdate(getApplicationContext().getString(R.string.card_risks_sync_status_starting),0);
+
             List<Country> countries = new ArrayList<>(Arrays.asList(Country.countries));
 
             boolean success = downloadDailyKeys(countries);
@@ -136,12 +139,16 @@ public class DiagKeySyncWorker extends Worker {
                         .apply();
 
                 // trigger update of risk dialog via intent
-                Intent sndGetUpdates = new Intent(getApplicationContext(), DiagKeySyncService.class);
-                sndGetUpdates.setAction(DiagKeySyncService.INTENT_GET_UPDATES);
-                getApplicationContext().startService(sndGetUpdates);
+                sendIntentGetUpdates();
+
+                // trigger hide sync status
+                sendIntentSyncStatusUpdateDone();
 
                 return Result.success();
             } else {
+                // TODO: maybe show sync error
+                sendIntentSyncStatusUpdateDone();
+
                 return Result.failure();
             }
         } finally {
@@ -149,10 +156,40 @@ public class DiagKeySyncWorker extends Worker {
         }
     }
 
+    private void sendIntentGetUpdates() {
+        Intent sndGetUpdates = new Intent(getApplicationContext(), DiagKeySyncService.class);
+        sndGetUpdates.setAction(DiagKeySyncService.INTENT_GET_UPDATES);
+        getApplicationContext().startService(sndGetUpdates);
+    }
+
+    private void sendIntentSyncStatusUpdateDone() {
+        Intent sndSyncStatusUpdate = new Intent();
+        sndSyncStatusUpdate.setAction(CardRisks.INTENT_SYNC_STATUS_SYNC);
+        sndSyncStatusUpdate.putExtra(CardRisks.INTENT_SYNC_STATUS_SYNC__RUNNING, false);
+        getApplicationContext().sendBroadcast(sndSyncStatusUpdate);
+    }
+
+    private void sendIntentSyncStatusUpdate(String description, int progress) {
+        Intent sndSyncStatusUpdate = new Intent();
+        sndSyncStatusUpdate.setAction(CardRisks.INTENT_SYNC_STATUS_SYNC);
+        sndSyncStatusUpdate.putExtra(CardRisks.INTENT_SYNC_STATUS_SYNC__RUNNING, true);
+        sndSyncStatusUpdate.putExtra(CardRisks.INTENT_SYNC_STATUS_SYNC__DESCRIPTION, description);
+        sndSyncStatusUpdate.putExtra(CardRisks.INTENT_SYNC_STATUS_SYNC__PROGRESS, progress);
+        getApplicationContext().sendBroadcast(sndSyncStatusUpdate);
+    }
+
     private boolean downloadDailyKeys(List<Country> countries) {
         boolean success = true;
         HashSet<String> availableCountries = new HashSet<>();
+        int countryCounter = 0;
         for(Country country : countries) {
+            // status update
+            String countryName = getApplicationContext().getString(country.getCountryName());
+            int progress = 10 + countryCounter * 40 / countries.size();
+            sendIntentSyncStatusUpdate(getApplicationContext().getString(R.string.card_risks_sync_status_download_country, countryName), progress);
+            countryCounter++;
+
+            // downloading keys
             success &= downloadDailyKeysForCountry(country);
             availableCountries.add(country.getCountryCode());
         }
@@ -279,7 +316,16 @@ public class DiagKeySyncWorker extends Worker {
         // group diag keys by timeslots
         List<CwaDiagKey> diagKeyList = db.runSync(() -> db.cwaDatabase().cwaDiagKey().getUncheckedInRollingSection(cwaTokenMinRollingTimestamp.minRollingTimestamp));
         TimeslotDiagKeys timeslot = null;
+        int diagKeyCounter = 0;
         for(CwaDiagKey diagKey : diagKeyList) {
+            // status update
+            if(diagKeyCounter % (diagKeyList.size()/100) == 0) {
+                int percent = diagKeyCounter * 100 / diagKeyList.size();
+                int progress = 50 + percent*50/100;
+                sendIntentSyncStatusUpdate(getApplicationContext().getString(R.string.card_risks_sync_status_comparing, percent), progress);
+            }
+            diagKeyCounter++;
+
             if(timeslot != null && !timeslot.belongsToThisTimeslot(diagKey)) {
                 success &= checkDiagKeysForTimeslot(timeslot);
                 timeslot = null;
