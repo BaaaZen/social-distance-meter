@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-package de.mhid.opensource.cwadetails.diagkeys.parser;
+package de.mhid.opensource.socialdistancemeter.diagkeys.parser;
 
 option java_package = "de.mhid.opensource.socialdistancemeter.diagkeys.parser";
 option java_outer_classname = "TemporaryExposureKeyExportParser";
