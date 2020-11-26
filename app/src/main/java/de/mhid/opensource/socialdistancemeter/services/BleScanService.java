@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.TimeZone;
 
 import de.mhid.opensource.socialdistancemeter.R;
 import de.mhid.opensource.socialdistancemeter.activity.MainActivity;
@@ -165,7 +166,8 @@ public class BleScanService extends Service {
   private class CwaScanResult {
     private List<Integer> rssiHistory = new ArrayList<>();
     public final byte[] token;
-    private Date timestamp = new Date();
+    private Date localTimestamp = new Date();
+    int utcOffset = TimeZone.getDefault().getRawOffset() + TimeZone.getDefault().getDSTSavings();
 
     public CwaScanResult(byte[] token) {
       this.token = token;
@@ -187,12 +189,13 @@ public class BleScanService extends Service {
     }
 
     public long getRollingTimestamp() {
-      return timestamp.getTime() / (10*60*1000);
+      return getUTCTimestamp().getTime() / (10*60*1000);
     }
 
-    public Date getTimestamp() {
-      return timestamp;
+    public Date getLocalTimestamp() {
+      return localTimestamp;
     }
+    public Date getUTCTimestamp() { return new Date(getLocalTimestamp().getTime() - utcOffset); }
 
     public String getHexToken() {
       return HexString.toHexString(token);
@@ -241,7 +244,8 @@ public class BleScanService extends Service {
         dbCwaToken.mac = mac;
         dbCwaToken.rssi = scanResult.getRssi();
         dbCwaToken.rollingTimestamp = scanResult.getRollingTimestamp();
-        dbCwaToken.timestamp = scanResult.getTimestamp();
+        dbCwaToken.localTimestamp = scanResult.getLocalTimestamp();
+        dbCwaToken.utcTimestamp = scanResult.getUTCTimestamp();
         dbCwaToken.token = scanResult.getHexToken();
 
         // insert in database

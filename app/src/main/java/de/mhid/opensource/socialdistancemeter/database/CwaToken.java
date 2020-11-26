@@ -34,8 +34,12 @@ public class CwaToken {
   public long rollingTimestamp;
 
   @NonNull
-  @ColumnInfo(name = "timestamp")
-  public Date timestamp;
+  @ColumnInfo(name = "local_timestamp")
+  public Date localTimestamp;
+
+  @NonNull
+  @ColumnInfo(name = "utc_timestamp")
+  public Date utcTimestamp;
 
   @NonNull
   @ColumnInfo(name = "rssi")
