@@ -7,6 +7,7 @@ import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -23,11 +24,10 @@ public class DiagKeyCrypto {
         public CryptoError(Throwable t) { super(t); }
     }
 
-    private CwaDiagKey cwaDiagKey;
-    private byte[] rpiKey = null;
+    private final CwaDiagKey cwaDiagKey;
 
-    private Long calculatedRollingTimestamp = null;
-    private byte[] calculatedRpi = null;
+    private byte[] rpiKey = null;
+    private final HashMap<Long, byte[]> calculatedRollingTimestamps = new HashMap<>();
 
     public DiagKeyCrypto(CwaDiagKey cwaDiagKey) {
         this.cwaDiagKey = cwaDiagKey;
@@ -92,7 +92,7 @@ public class DiagKeyCrypto {
     }
 
     private byte[] getRpiForRollingTimestamp(long rollingTimestamp) throws CryptoError {
-        if(calculatedRollingTimestamp == null || calculatedRollingTimestamp != rollingTimestamp) {
+        if(!calculatedRollingTimestamps.containsKey(rollingTimestamp)) {
             // recalculate
             byte[] data = ByteBuffer.allocate(16)
                 .order(ByteOrder.LITTLE_ENDIAN)
@@ -101,11 +101,10 @@ public class DiagKeyCrypto {
                 .putInt((int) (rollingTimestamp & 0xffffffffL))
                 .array();
 
-            calculatedRpi = aesEncrypt(getRpiKey(), data);
-            calculatedRollingTimestamp = rollingTimestamp;
+            calculatedRollingTimestamps.put(rollingTimestamp, aesEncrypt(getRpiKey(), data));
         }
 
-        return calculatedRpi;
+        return calculatedRollingTimestamps.get(rollingTimestamp);
     }
 
     public boolean isTokenMatching(String token, long rollingTimestamp) throws CryptoError {
@@ -114,8 +113,16 @@ public class DiagKeyCrypto {
 
         byte[] rpiFromToken = HexString.toByteArray(rpi);
 //        byte[] aemKey = HexString.toByteArray(aem);
-        byte[] rpiFromDiagKey = getRpiForRollingTimestamp(rollingTimestamp);
 
-        return Arrays.equals(rpiFromToken, rpiFromDiagKey);
+        // compare with rpi of a rolling timestamp diff ~ 30mins
+        for(long rti=rollingTimestamp-3; rti<=rollingTimestamp+3; rti++) {
+            if(rti < cwaDiagKey.rollingStartIntervalNumber) continue;
+            if(rti >= cwaDiagKey.rollingStartIntervalNumber + cwaDiagKey.rollingPeriod) break;
+
+            byte[] rpiFromDiagKey = getRpiForRollingTimestamp(rti);
+            if(Arrays.equals(rpiFromToken, rpiFromDiagKey)) return true;
+        }
+
+        return false;
     }
 }
