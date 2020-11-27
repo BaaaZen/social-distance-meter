@@ -136,11 +136,14 @@ public class DiagKeySyncWorker extends Worker {
 
             Log.i(getClass().getSimpleName(), "Work is done with success: " + success);
             if (success) {
-                String date = DateFormat.getDateInstance(DateFormat.MEDIUM).format(new Date());
+                Date d = new Date();
+                String date = DateFormat.getDateInstance(DateFormat.MEDIUM).format(d);
+                String time = DateFormat.getTimeInstance(DateFormat.SHORT).format(d);
+                String dateTime = getApplicationContext().getString(R.string.date_time_format, date, time);
 
                 sharedPreferences
                         .edit()
-                        .putString(getApplicationContext().getString(R.string.internal_settings_key_last_scan_timestamp), date)
+                        .putString(getApplicationContext().getString(R.string.internal_settings_key_last_scan_timestamp), dateTime)
                         .apply();
 
                 // trigger update of risk dialog via intent

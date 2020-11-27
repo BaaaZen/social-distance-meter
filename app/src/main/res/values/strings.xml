@@ -6,6 +6,8 @@
     <string name="unknown_error">Unknown Error</string>
     <string name="national_cwa_name">Corona Warn App</string>
 
+    <string name="date_time_format">%1$s - %2$s</string>
+
     <!-- country names -->
     <string name="country_de">Germany</string>
 
@@ -55,8 +57,8 @@
     <!-- CARD: risks -->
     <string name="card_risks_title">Risks</string>
     <string name="card_risks_last_update_never">Never synchronized</string>
-    <string name="card_risks_last_update_date">Last synchronization: <b>%1$s</b></string>
-    <string name="card_risks_diag_key_count"># of diagnosis keys: <b>%1$d</b></string>
+    <string name="card_risks_last_update_date">Last synchronization: <![CDATA[<b>%1$s</b>]]></string>
+    <string name="card_risks_diag_key_count"># of diagnosis keys: <![CDATA[<b>%1$d</b>]]></string>
     <string name="card_risks_start_sync_command">Synchronize diagnosis keys</string>
     <string name="card_risks_no_risk_caption">No risk found</string>
     <string name="card_risks_sync_status_starting">Starting to sync ...</string>
