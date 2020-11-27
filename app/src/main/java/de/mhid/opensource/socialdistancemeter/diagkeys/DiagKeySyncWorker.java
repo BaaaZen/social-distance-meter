@@ -110,6 +110,7 @@ public class DiagKeySyncWorker extends Worker {
     @Override
     public Result doWork() {
         Log.i(getClass().getSimpleName(), "Starting to work ... :-)");
+        String error = getApplicationContext().getString(R.string.card_risks_sync_status_error_unknown);
 
         boolean lockSuccess = lockConcurrency();
         if(!lockSuccess) {
@@ -124,10 +125,14 @@ public class DiagKeySyncWorker extends Worker {
             List<Country> countries = new ArrayList<>(Arrays.asList(Country.countries));
 
             boolean success = downloadDailyKeys(countries);
+            if(!success) error = getApplicationContext().getString(R.string.card_risks_sync_status_error_download);
+
 
             Log.i(getClass().getSimpleName(), "Downloading is done with success: " + success);
 
-            success &= checkDiagKeys();
+            boolean checkSuccess = checkDiagKeys();
+            if(!checkSuccess) error = getApplicationContext().getString(R.string.card_risks_sync_status_error_checking);
+            success &= checkSuccess;
 
             Log.i(getClass().getSimpleName(), "Work is done with success: " + success);
             if (success) {
@@ -146,8 +151,8 @@ public class DiagKeySyncWorker extends Worker {
 
                 return Result.success();
             } else {
-                // TODO: maybe show sync error
-                sendIntentSyncStatusUpdateDone();
+                // show sync error
+                sendIntentSyncStatusUpdateError(error);
 
                 return Result.failure();
             }
@@ -166,6 +171,14 @@ public class DiagKeySyncWorker extends Worker {
         Intent sndSyncStatusUpdate = new Intent();
         sndSyncStatusUpdate.setAction(CardRisks.INTENT_SYNC_STATUS_SYNC);
         sndSyncStatusUpdate.putExtra(CardRisks.INTENT_SYNC_STATUS_SYNC__RUNNING, false);
+        getApplicationContext().sendBroadcast(sndSyncStatusUpdate);
+    }
+
+    private void sendIntentSyncStatusUpdateError(String error) {
+        Intent sndSyncStatusUpdate = new Intent();
+        sndSyncStatusUpdate.setAction(CardRisks.INTENT_SYNC_STATUS_SYNC);
+        sndSyncStatusUpdate.putExtra(CardRisks.INTENT_SYNC_STATUS_SYNC__ERROR, true);
+        sndSyncStatusUpdate.putExtra(CardRisks.INTENT_SYNC_STATUS_SYNC__DESCRIPTION, error);
         getApplicationContext().sendBroadcast(sndSyncStatusUpdate);
     }
 

@@ -62,6 +62,9 @@
     <string name="card_risks_sync_status_starting">Starting to sync ...</string>
     <string name="card_risks_sync_status_download_country">Downloading keys for %1$s</string>
     <string name="card_risks_sync_status_comparing">Comparing diagnosis keys (%1$d%%)</string>
+    <string name="card_risks_sync_status_error_unknown">Unknown error</string>
+    <string name="card_risks_sync_status_error_download">Error downloading diagnosis keys.</string>
+    <string name="card_risks_sync_status_error_checking">Error checking diagnosis keys.</string>
 
     <!--  notification  -->
     <string name="notification_title">Social Distance Meter</string>

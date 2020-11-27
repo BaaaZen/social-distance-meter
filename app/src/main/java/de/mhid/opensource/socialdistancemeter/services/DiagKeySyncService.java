@@ -120,12 +120,9 @@ public class DiagKeySyncService extends Service {
 
         // query db -> number of keys
         final Database db = Database.getInstance(this);
-        db.runAsync(new Runnable() {
-            @Override
-            public void run() {
-                CwaDiagKeyCount diagKeyCount = db.cwaDatabase().cwaDiagKey().getCount();
-                sendIntentDiagKeyCount(diagKeyCount.count);
-            }
+        db.runAsync(() -> {
+            CwaDiagKeyCount diagKeyCount = db.cwaDatabase().cwaDiagKey().getCount();
+            sendIntentDiagKeyCount(diagKeyCount.count);
         });
     }
 }

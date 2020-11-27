@@ -6,23 +6,22 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
-
-import com.google.android.material.appbar.CollapsingToolbarLayout;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
+import com.google.android.material.appbar.CollapsingToolbarLayout;
 
 import de.mhid.opensource.socialdistancemeter.R;
 import de.mhid.opensource.socialdistancemeter.activity.maincards.CardRisks;
@@ -38,8 +37,6 @@ public class MainActivity extends AppCompatActivity {
   public static final int COUNT_ERROR_SCANNING_IN_PROGRESS = -1;
   public static final int COUNT_ERROR_UNABLE_TO_SCAN = -2;
 
-  private CardRisks cardRisks = null;
-
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -50,16 +47,11 @@ public class MainActivity extends AppCompatActivity {
     CollapsingToolbarLayout toolBarLayout = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
     toolBarLayout.setTitle(getTitle());
 
-    cardRisks = new CardRisks(this);
+    new CardRisks(this);
 
     // click handler for permission card
     CardView cardPermissions = (CardView)findViewById(R.id.card_permissions);
-    cardPermissions.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        requestPermission();
-      }
-    });
+    cardPermissions.setOnClickListener(v -> requestPermission());
 
     // register scan result receiver from service
     IntentFilter rcvUserCountFilter = new IntentFilter();
@@ -141,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
     }
   }
 
-  public static int getIconForUserCount(Context ctx, int count) {
+  public static int getIconForUserCount(int count) {
     int iconRes;
     if(count == COUNT_ERROR_SCANNING_IN_PROGRESS) {
       iconRes = R.drawable.round_search_24;
@@ -166,14 +158,8 @@ public class MainActivity extends AppCompatActivity {
 
     // update user icon
     ImageView currentUserIcon = (ImageView)findViewById(R.id.current_users_icon);
-    int iconRes = getIconForUserCount(this, count);
-    Drawable icon;
-    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-      icon = getDrawable(iconRes);
-    } else {
-      icon = getResources().getDrawable(iconRes);
-    }
-    currentUserIcon.setImageDrawable(icon);
+    int iconRes = getIconForUserCount(count);
+    currentUserIcon.setImageDrawable(ContextCompat.getDrawable(this, iconRes));
   }
 
   private void checkRequestPermission() {

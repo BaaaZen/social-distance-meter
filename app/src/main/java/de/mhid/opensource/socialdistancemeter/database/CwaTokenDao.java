@@ -22,7 +22,7 @@ public interface CwaTokenDao {
   @Query("SELECT MIN(rolling_timestamp) as minRollingTimestamp FROM cwa_token")
   CwaTokenMinRollingTimestamp getMinRollingTimestamp();
 
-  @Query("SELECT mac, rssi, rolling_timestamp as rollingTimestamp FROM cwa_token WHERE rollingTimestamp >= :minRollingTimestamp AND rollingTimestamp <= :maxRollingTimestamp ORDER BY rolling_timestamp DESC, rssi ASC, mac ASC")
+  @Query("SELECT mac, rssi, local_timestamp/600000 as localRollingTimestamp FROM cwa_token WHERE local_timestamp/600000 >= :minRollingTimestamp AND local_timestamp/600000 <= :maxRollingTimestamp ORDER BY rolling_timestamp DESC, rssi ASC, mac ASC")
   List<CwaTokenStatistics> getStatistics(long minRollingTimestamp, long maxRollingTimestamp);
 
   @Query("SELECT * FROM cwa_token WHERE diagkey_id IS NULL AND rolling_timestamp >= :minRollingTimestamp AND rolling_timestamp < :maxRollingTimestamp ORDER BY rolling_timestamp ASC, mac ASC, token ASC")

@@ -106,10 +106,10 @@ public class HistoryGraphView extends View {
         if(statisticsList != null) {
             long currentRollingTimestamp = 0;
             for (CwaTokenStatistics statistics : statisticsList) {
-                if (statistics.rollingTimestamp != currentRollingTimestamp) {
+                if (statistics.localRollingTimestamp != currentRollingTimestamp) {
                     if (currentRollingTimestamp != 0 && mac.size() > maxItemsPerRollingTimestamp)
                         maxItemsPerRollingTimestamp = mac.size();
-                    currentRollingTimestamp = statistics.rollingTimestamp;
+                    currentRollingTimestamp = statistics.localRollingTimestamp;
                     mac.clear();
                 }
                 mac.add(statistics.mac);
@@ -126,10 +126,10 @@ public class HistoryGraphView extends View {
         float blockX = 0;
         int alpha = 255;
         for(CwaTokenStatistics statistics : statisticsList) {
-            if (statistics.rollingTimestamp != currentRollingTimestamp) {
+            if (statistics.localRollingTimestamp != currentRollingTimestamp) {
                 if(currentRollingTimestamp != 0) paintBlock(canvas, blockX+blockSpacing, yAxis-axisWidth/2 - (yAxis-axisWidth/2)/maxItemsPerRollingTimestamp*mac.size(), blockX+slotWidth-blockSpacing, yAxis-axisWidth/2, colors, alpha);
 
-                currentRollingTimestamp = statistics.rollingTimestamp;
+                currentRollingTimestamp = statistics.localRollingTimestamp;
                 colors.clear();
                 mac.clear();
 

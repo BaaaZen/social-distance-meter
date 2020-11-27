@@ -40,9 +40,7 @@ public class BleScanService extends Service {
   private BleScanner bleScanner = null;
   private SharedPreferences sharedPreferences = null;
 
-  private SharedPreferences.OnSharedPreferenceChangeListener sharedPreferenceChangeListener = (sharedPreferences1, key) -> {
-    updateFromPreferences(key);
-  };
+  private final SharedPreferences.OnSharedPreferenceChangeListener sharedPreferenceChangeListener = (sharedPreferences1, key) -> updateFromPreferences(key);
 
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
@@ -117,7 +115,7 @@ public class BleScanService extends Service {
     // scan period
     if(updatedKey == null || updatedKey.equals(getString(R.string.settings_key_scan_period))) {
       String scanPeriod = sharedPreferences.getString(getString(R.string.settings_key_scan_period), getString(R.string.settings_list_scan_period_default_value));
-      String scanPeriodValues[] = getResources().getStringArray(R.array.settings_list_scan_period_values);
+      String[] scanPeriodValues = getResources().getStringArray(R.array.settings_list_scan_period_values);
       long scanPeriodValue = 60000;
       if (scanPeriod.equals(scanPeriodValues[0])) {
         scanPeriodValue = 30000; // 30s
@@ -140,7 +138,7 @@ public class BleScanService extends Service {
     // scan location period
     if(updatedKey == null || updatedKey.equals(getString(R.string.settings_key_scan_location_period))) {
       String scanLocationPeriod = sharedPreferences.getString(getString(R.string.settings_key_scan_location_period), getString(R.string.settings_list_scan_location_period_default_value));
-      String scanLocationPeriodValues[] = getResources().getStringArray(R.array.settings_list_scan_location_period_values);
+      String[] scanLocationPeriodValues = getResources().getStringArray(R.array.settings_list_scan_location_period_values);
       long scanLocationPeriodValue = 5 * 60000;
       boolean scanLocationPeriodOnGathering = false;
       if (scanLocationPeriod.equals(scanLocationPeriodValues[0])) {
@@ -163,10 +161,10 @@ public class BleScanService extends Service {
     return null;
   }
 
-  private class CwaScanResult {
-    private List<Integer> rssiHistory = new ArrayList<>();
+  private static class CwaScanResult {
+    private final List<Integer> rssiHistory = new ArrayList<>();
     public final byte[] token;
-    private Date localTimestamp = new Date();
+    private final Date localTimestamp = new Date();
     int utcOffset = TimeZone.getDefault().getRawOffset() + TimeZone.getDefault().getDSTSavings();
 
     public CwaScanResult(byte[] token) {
@@ -273,7 +271,7 @@ public class BleScanService extends Service {
   private void updateNotification(int userCount) {
     // calc text and icon
     String notificationText = MainActivity.getStatusForUserCount(this, userCount);
-    int iconRes = MainActivity.getIconForUserCount(this, userCount);
+    int iconRes = MainActivity.getIconForUserCount(userCount);
 
     // generate notification for foreground service
     Intent notificationIntent = new Intent(this, MainActivity.class);

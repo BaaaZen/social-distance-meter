@@ -117,7 +117,7 @@
                     android:layout_marginStart="8dp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/animation_rotate_sync" />
+                    app:srcCompat="@drawable/round_sync_24" />
 
                 <TextView
                     android:id="@+id/card_risks_sync_details"
