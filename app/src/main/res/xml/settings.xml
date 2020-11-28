@@ -33,9 +33,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             android:summary="%s" />
         <SwitchPreference
             android:defaultValue="false"
+            android:dependency="@string/settings_key_scan_enabled"
             android:key="@string/settings_key_scan_location_enabled"
             android:title="@string/settings_title_scan_location_active"
-            android:dependency="@string/settings_key_scan_enabled" />
+            app:enabled="false" />
         <ListPreference
             android:defaultValue="@string/settings_list_scan_location_period_default_value"
             android:entries="@array/settings_list_scan_location_period_description"
