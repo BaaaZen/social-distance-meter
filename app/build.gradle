@@ -1,4 +1,8 @@
 plugins {
+    id 'com.gladed.androidgitversion' version '0.4.14'
+}
+
+plugins {
     id 'com.android.application'
 }
 
@@ -10,8 +14,8 @@ android {
         applicationId "de.mhid.opensource.socialdistancemeter"
         minSdkVersion 19
         targetSdkVersion 30
-        versionCode 1
-        versionName "1.0"
+        versionCode androidGitVersion.code()
+        versionName androidGitVersion.name()
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
