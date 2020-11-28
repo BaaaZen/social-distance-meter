@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
@@ -40,6 +41,7 @@ import androidx.core.content.ContextCompat;
 
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 
+import de.mhid.opensource.socialdistancemeter.AppInformation;
 import de.mhid.opensource.socialdistancemeter.R;
 import de.mhid.opensource.socialdistancemeter.activity.maincards.CardRisks;
 import de.mhid.opensource.socialdistancemeter.services.BleScanService;
@@ -120,8 +122,37 @@ public class MainActivity extends AppCompatActivity {
     int selectedId = item.getItemId();
 
     if(selectedId == R.id.menu_main_settings) {
-      Intent intent = new Intent(this, SettingsActivity.class);
-      startActivity(intent);
+      // open settings activity
+      Intent settingsActivityintent = new Intent(this, SettingsActivity.class);
+      startActivity(settingsActivityintent);
+      return true;
+    } else if(selectedId == R.id.menu_main_about_app) {
+      // open about activity
+      Intent aboutActivityIntent = new Intent(this, AboutActivity.class);
+      startActivity(aboutActivityIntent);
+      return true;
+    } else if(selectedId == R.id.menu_main_about_homepage) {
+      // open homepage
+      Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(AppInformation.HOMEPAGE));
+      startActivity(browserIntent);
+      return true;
+    } else if(selectedId == R.id.menu_main_about_changelog) {
+      // open markdown activity -> changelog.md
+      Intent markdownActivity = new Intent(this, MarkdownActivity.class);
+      markdownActivity.putExtra(MarkdownActivity.INTENT_START_ACTIVITY__MARKDOWN_FILE, "changelog");
+      startActivity(markdownActivity);
+      return true;
+    } else if(selectedId == R.id.menu_main_about_license) {
+      // open markdown activity -> license.md
+      Intent markdownActivity = new Intent(this, MarkdownActivity.class);
+      markdownActivity.putExtra(MarkdownActivity.INTENT_START_ACTIVITY__MARKDOWN_FILE, "license");
+      startActivity(markdownActivity);
+      return true;
+    } else if(selectedId == R.id.menu_main_about_3rdparty) {
+      // open markdown activity -> thirdparty.md
+      Intent markdownActivity = new Intent(this, MarkdownActivity.class);
+      markdownActivity.putExtra(MarkdownActivity.INTENT_START_ACTIVITY__MARKDOWN_FILE, "thirdparty");
+      startActivity(markdownActivity);
       return true;
     }
 

@@ -20,6 +20,10 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    sourceSets {
+        main.assets.srcDirs += ['../doc']
+    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -65,4 +69,8 @@ dependencies {
     def work_version = "2.4.0"
     // (Java only)
     implementation "androidx.work:work-runtime:$work_version"
+
+    // markwon
+    def markwon_version = '4.6.0'
+    implementation "io.noties.markwon:core:$markwon_version"
 }

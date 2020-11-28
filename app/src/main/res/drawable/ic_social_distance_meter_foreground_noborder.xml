@@ -1,0 +1,78 @@
+<!--
+Social Distance Meter - An app to analyze and rate your social distancing behavior
+Copyright (C) 2020  Mirko Hansen (baaazen@gmail.com)
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<vector android:height="60.000004dp" android:viewportHeight="60"
+    android:viewportWidth="59.999996" android:width="60dp"
+    xmlns:aapt="http://schemas.android.com/aapt" xmlns:android="http://schemas.android.com/apk/res/android">
+    <path
+        android:pathData="M30,30m-29,0a29,29 0,1 1,58 0a29,29 0,1 1,-58 0"
+        android:strokeColor="#00000000" android:strokeLineCap="round"
+        android:strokeLineJoin="round" android:strokeWidth="2.64577">
+        <aapt:attr name="android:fillColor">
+            <gradient android:endX="56.134674" android:endY="29.999998"
+                android:startX="5.382274" android:startY="30.505644" android:type="linear">
+                <item android:color="#FF4DFF4D" android:offset="0"/>
+                <item android:color="#FFFFFF4D" android:offset="0.4985813"/>
+                <item android:color="#FFFF4D4D" android:offset="1"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:fillColor="#00000000"
+        android:pathData="M1.3088,30a28.6912,28.6912 0,1 0,57.3824 0a28.6912,28.6912 0,1 0,-57.3824 0z"
+        android:strokeColor="#000000" android:strokeLineCap="round"
+        android:strokeLineJoin="round" android:strokeWidth="2.61759"/>
+    <path android:fillColor="#000000"
+        android:pathData="M30,30m-4.5,0a4.5,4.5 0,1 1,9 0a4.5,4.5 0,1 1,-9 0"
+        android:strokeColor="#00000000" android:strokeLineCap="round"
+        android:strokeLineJoin="round" android:strokeWidth="2.98221"/>
+    <path android:fillColor="#000000"
+        android:pathData="M11.25,17.75m-2.25,0a2.25,2.25 0,1 1,4.5 0a2.25,2.25 0,1 1,-4.5 0"
+        android:strokeColor="#00000000" android:strokeLineCap="round"
+        android:strokeLineJoin="round" android:strokeWidth="1.49111"/>
+    <path android:fillColor="#000000"
+        android:pathData="M48.75,17.75m-2.25,0a2.25,2.25 0,1 1,4.5 0a2.25,2.25 0,1 1,-4.5 0"
+        android:strokeColor="#00000000" android:strokeLineCap="round"
+        android:strokeLineJoin="round" android:strokeWidth="1.49111"/>
+    <path android:fillColor="#000000"
+        android:pathData="M37.75,9.75m-2.25,0a2.25,2.25 0,1 1,4.5 0a2.25,2.25 0,1 1,-4.5 0"
+        android:strokeColor="#00000000" android:strokeLineCap="round"
+        android:strokeLineJoin="round" android:strokeWidth="1.49111"/>
+    <path android:fillColor="#000000"
+        android:pathData="M22.25,9.75m-2.25,0a2.25,2.25 0,1 1,4.5 0a2.25,2.25 0,1 1,-4.5 0"
+        android:strokeColor="#00000000" android:strokeLineCap="round"
+        android:strokeLineJoin="round" android:strokeWidth="1.49111"/>
+    <path android:fillColor="#00000000"
+        android:pathData="m30.0967,30.0967 l-7.9375,-20.5997"
+        android:strokeColor="#000000" android:strokeLineCap="round"
+        android:strokeLineJoin="miter" android:strokeWidth="5"/>
+    <path android:fillColor="#000000"
+        android:pathData="M53.9591,46.4669A30,30 0,0 1,30 58.4125,30 30,0 0,1 6.0409,46.4669"
+        android:strokeColor="#00000000" android:strokeLineCap="round"
+        android:strokeLineJoin="round" android:strokeWidth="2.96661"/>
+    <path android:fillColor="#000000"
+        android:pathData="M53.3144,47.7994A30,30 0,0 0,30 36.679,30 30,0 0,0 6.6856,47.7993"
+        android:strokeColor="#00000000" android:strokeLineCap="round"
+        android:strokeLineJoin="round" android:strokeWidth="2.96661"/>
+    <path android:fillColor="#ffffff"
+        android:pathData="m24,43.7044c1.1,0 2,-0.9 2,-2 0,-1.1 -0.9,-2 -2,-2 -1.1,0 -2,0.9 -2,2 0,1.1 0.9,2 2,2m4,3.43c0,-0.81 -0.5,-1.53 -1.22,-1.85 -0.85,-0.37 -1.78,-0.58 -2.78,-0.58 -1,0 -1.93,0.21 -2.78,0.58 -0.72,0.32 -1.22,1.04 -1.22,1.85l0,0.57l8,0l0,-0.57" android:strokeWidth="0.365335"/>
+    <path android:fillColor="#ffffff"
+        android:pathData="m36,43.7044c1.1,0 2,-0.9 2,-2 0,-1.1 -0.9,-2 -2,-2 -1.1,0 -2,0.9 -2,2 0,1.1 0.9,2 2,2m4,3.43c0,-0.81 -0.5,-1.53 -1.22,-1.85 -0.85,-0.37 -1.78,-0.58 -2.78,-0.58 -1,0 -1.93,0.21 -2.78,0.58 -0.72,0.32 -1.22,1.04 -1.22,1.85l0,0.57l8,0l0,-0.57" android:strokeWidth="0.365334"/>
+    <path android:fillColor="#ffffff"
+        android:pathData="m20,52.5 l4,-3l0,2L36,51.5l0,-2l4,3 -4,3L36,53.5L24,53.5l0,2z"
+        android:strokeColor="#00000000" android:strokeLineCap="butt"
+        android:strokeLineJoin="miter" android:strokeWidth="0.264583"/>
+</vector>

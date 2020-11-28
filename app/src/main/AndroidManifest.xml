@@ -18,22 +18,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="de.mhid.opensource.socialdistancemeter">
+    <!-- required for continuous background scanning -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
-    <!--  required for continuous background scanning  -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <!-- required for getting location and BLE token in background -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
-    <!--  required for getting location and BLE token in background  -->
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
-
-    <!--  required for BLE scanner   -->
+    <!-- required for BLE scanner -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 
-    <!--  required for startup BLE scanner on boot  -->
+    <!-- required for startup BLE scanner on boot -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
-    <!--  required to download diagnosis keys  -->
+    <!-- required to download diagnosis keys -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -44,7 +43,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         android:supportsRtl="true"
         android:theme="@style/Theme.SocialDistanceMeter">
         <activity
-            android:name="de.mhid.opensource.socialdistancemeter.activity.MainActivity"
+            android:name=".activity.MainActivity"
             android:label="@string/title_activity_main"
             android:theme="@style/Theme.SocialDistanceMeter.NoActionBar">
             <intent-filter>
@@ -53,22 +52,39 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="de.mhid.opensource.socialdistancemeter.activity.SettingsActivity"
+        <activity
+            android:name=".activity.SettingsActivity"
             android:label="@string/menu_main_settings"
-            android:parentActivityName="de.mhid.opensource.socialdistancemeter.activity.MainActivity">
-
+            android:parentActivityName=".activity.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="de.mhid.opensource.socialdistancemeter.activity.MainActivity"/>
+                android:value="de.mhid.opensource.socialdistancemeter.activity.MainActivity" />
+        </activity>
+        <activity
+            android:name=".activity.AboutActivity"
+            android:parentActivityName=".activity.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="de.mhid.opensource.socialdistancemeter.activity.MainActivity" />
+        </activity>
+        <activity
+            android:name=".activity.MarkdownActivity"
+            android:parentActivityName=".activity.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="de.mhid.opensource.socialdistancemeter.activity.MainActivity" />
         </activity>
 
-        <receiver android:name="de.mhid.opensource.socialdistancemeter.services.Autostart">
+        <receiver android:name=".services.Autostart">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
 
-        <service android:name="de.mhid.opensource.socialdistancemeter.services.BleScanService" android:foregroundServiceType="location"/>
-        <service android:name="de.mhid.opensource.socialdistancemeter.services.DiagKeySyncService"/>
+        <service
+            android:name=".services.BleScanService"
+            android:foregroundServiceType="location" />
+        <service android:name=".services.DiagKeySyncService" />
     </application>
+
 </manifest>
