@@ -80,7 +80,7 @@ public class CardRisks {
             if(intent != null) {
                 if(intent.hasExtra(INTENT_SYNC_LAST_UPDATE__DATE)) {
                     String date = intent.getStringExtra(INTENT_SYNC_LAST_UPDATE__DATE);
-                    setLastUpdateDetails(mainActivity.getString(R.string.card_risks_last_update_date, date));
+                    setLastUpdateDetails(mainActivity.getString(R.string.card_risks_last_update_date, "<b>" + date + "</b>"));
                 } else {
                     setLastUpdateDetails(mainActivity.getString(R.string.card_risks_last_update_never));
                 }
@@ -151,7 +151,7 @@ public class CardRisks {
             blockDiagKeyCount.setVisibility(View.GONE);
         } else {
             TextView diagKeyDetails = mainActivity.findViewById(R.id.card_risks_diag_keys_details);
-            String s = mainActivity.getString(R.string.card_risks_diag_key_count, count);
+            String s = mainActivity.getString(R.string.card_risks_diag_key_count, "<b>" + count + "</b>");
             diagKeyDetails.setText(Html.fromHtml(s));
 
             blockDiagKeyCount.setVisibility(View.VISIBLE);

@@ -34,7 +34,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:layout_margin="8dp">
 
                 <ImageView
                     android:id="@+id/about_logo"

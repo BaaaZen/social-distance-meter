@@ -18,13 +18,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <resources>
     <!-- settings keys -->
-    <string name="settings_key_scan_enabled">settings_scan_enabled</string>
-    <string name="settings_key_scan_period">settings_scan_period</string>
-    <string name="settings_key_scan_location_enabled">settings_scan_location_enabled</string>
-    <string name="settings_key_scan_location_period">settings_scan_location_period</string>
+    <string name="settings_key_scan_enabled" translatable="false">settings_scan_enabled</string>
+    <string name="settings_key_scan_period" translatable="false">settings_scan_period</string>
+    <string name="settings_key_scan_location_enabled" translatable="false">settings_scan_location_enabled</string>
+    <string name="settings_key_scan_location_period" translatable="false">settings_scan_location_period</string>
 
     <!-- settings: scan settings -->
-    <string name="settings_list_scan_period_default_value">1min</string>
+    <string name="settings_list_scan_period_default_value" translatable="false">1min</string>
     <string-array name="settings_list_scan_period_values">
         <item>30sec</item>
         <item>1min</item>
@@ -32,7 +32,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <item>5min</item>
     </string-array>
 
-    <string name="settings_list_scan_location_period_default_value">15min</string>
+    <string name="settings_list_scan_location_period_default_value" translatable="false">15min</string>
     <string-array name="settings_list_scan_location_period_values">
         <item>continuous</item>
         <item>5min</item>
@@ -41,5 +41,5 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     </string-array>
 
     <!-- hidden/internal setting keys -->
-    <string name="internal_settings_key_last_scan_timestamp">internal_settings_key_last_scan_timestamp</string>
+    <string name="internal_settings_key_last_scan_timestamp" translatable="false">internal_settings_key_last_scan_timestamp</string>
 </resources>

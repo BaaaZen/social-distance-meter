@@ -18,13 +18,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <resources>
     <string name="app_name">Social Distance Meter</string>
     <string name="title_activity_main">Social Distance Meter</string>
+    <string name="notification_title">Social Distance Meter</string>
     <string name="app_subtitle">An app to analyze and rate your social distancing behavior</string>
 
-    <string name="placeholder">PLACEHOLDER</string>
+    <string name="placeholder" translatable="false">PLACEHOLDER</string>
     <string name="unknown_error">Unknown Error</string>
     <string name="markdown_error">Error loading markdown from %1$s:\n%2$s</string>
 
-    <string name="national_cwa_name">Corona Warn App</string>
+    <string name="national_cwa_name">(National Corona Tracking App)</string>
     <string name="date_time_format">%1$s - %2$s</string>
 
     <!-- country names -->
@@ -40,35 +41,46 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <string name="menu_main_about_3rdparty">Third Party Software</string>
 
     <!-- ABOUT: APP -->
-    <string name="about_version">Version: <![CDATA[<b>%1$s</b>]]></string>
+    <string name="about_version">Version: %1$s</string>
 
     <!-- SETTINGS -->
     <string name="settings_category_scan">Scan settings</string>
     <string name="settings_title_scan_active">Scanning enabled</string>
     <string name="settings_title_scan_period">Scan period</string>
+    <string name="settings_title_scan_period_value_30sec">30 seconds</string>
+    <string name="settings_title_scan_period_value_1min_rec">1 minute (recommended)</string>
+    <string name="settings_title_scan_period_value_3min">3 minutes</string>
+    <string name="settings_title_scan_period_value_5min">5 minutes</string>
     <string-array name="settings_list_scan_period_description">
-        <item>30 seconds</item>
-        <item>1 minute (recommended)</item>
-        <item>3 minutes</item>
-        <item>5 minutes</item>
+        <item>@string/settings_title_scan_period_value_30sec</item>
+        <item>@string/settings_title_scan_period_value_1min_rec</item>
+        <item>@string/settings_title_scan_period_value_3min</item>
+        <item>@string/settings_title_scan_period_value_5min</item>
     </string-array>
     <string name="settings_title_scan_location_active">Record location enabled</string>
     <string name="settings_title_scan_location_period">Record location period</string>
+    <string name="settings_title_scan_location_period_value_continuous">Continuous</string>
+    <string name="settings_title_scan_location_period_value_5min">5 minutes</string>
+    <string name="settings_title_scan_location_period_value_15min_rec">15 minutes (recommended)</string>
+    <string name="settings_title_scan_location_period_value_gathering">Gathering detected</string>
     <string-array name="settings_list_scan_location_period_description">
-        <item>Continuous</item>
-        <item>5 minutes</item>
-        <item>15 minutes (recommended)</item>
-        <item>Gathering detected</item>
+        <item>@string/settings_title_scan_location_period_value_continuous</item>
+        <item>@string/settings_title_scan_location_period_value_5min</item>
+        <item>@string/settings_title_scan_location_period_value_15min_rec</item>
+        <item>@string/settings_title_scan_location_period_value_gathering</item>
     </string-array>
 
     <!-- CARD: current informations -->
     <string name="card_current_title">Current environment</string>
     <string name="card_current_waiting_scan_results">Waiting for scan results ...</string>
     <string name="card_current_users_unknown">Unable to count people near you.</string>
+    <string name="card_current_users_count_pl_zero">Nobody near you.</string>
+    <string name="card_current_users_count_pl_one">%d person near you.</string>
+    <string name="card_current_users_count_pl_other">%d people near you.</string>
     <plurals name="card_current_users_count">
-        <item quantity="zero">Nobody near you.</item>
-        <item quantity="one">%d person near you.</item>
-        <item quantity="other">%d people near you.</item>
+        <item quantity="zero">@string/card_current_users_count_pl_zero</item>
+        <item quantity="one">@string/card_current_users_count_pl_one</item>
+        <item quantity="other">@string/card_current_users_count_pl_other</item>
     </plurals>
 
     <!-- CARD: permissions -->
@@ -84,8 +96,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <!-- CARD: risks -->
     <string name="card_risks_title">Risks</string>
     <string name="card_risks_last_update_never">Never synchronized</string>
-    <string name="card_risks_last_update_date">Last synchronization: <![CDATA[<b>%1$s</b>]]></string>
-    <string name="card_risks_diag_key_count"># of diagnosis keys: <![CDATA[<b>%1$d</b>]]></string>
+    <string name="card_risks_last_update_date">Last synchronization: %1$s</string>
+    <string name="card_risks_diag_key_count"># of diagnosis keys: %1$s</string>
     <string name="card_risks_start_sync_command">Synchronize diagnosis keys</string>
     <string name="card_risks_no_risk_caption">No risk found</string>
     <string name="card_risks_sync_status_starting">Starting to sync ...</string>
@@ -94,7 +106,4 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <string name="card_risks_sync_status_error_unknown">Unknown error</string>
     <string name="card_risks_sync_status_error_download">Error downloading diagnosis keys.</string>
     <string name="card_risks_sync_status_error_checking">Error checking diagnosis keys.</string>
-
-    <!--  notification  -->
-    <string name="notification_title">Social Distance Meter</string>
 </resources>

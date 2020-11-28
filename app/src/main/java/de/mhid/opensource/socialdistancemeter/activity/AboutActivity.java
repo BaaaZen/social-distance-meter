@@ -37,7 +37,7 @@ public class AboutActivity extends AppCompatActivity {
 
         // update version
         TextView version = findViewById(R.id.about_version);
-        version.setText(Html.fromHtml(getString(R.string.about_version, AppInformation.VERSION)));
+        version.setText(Html.fromHtml(getString(R.string.about_version, "<b>" + AppInformation.VERSION + "</b>")));
 
         // update url/homepage
         TextView homepage = findViewById(R.id.about_url);
