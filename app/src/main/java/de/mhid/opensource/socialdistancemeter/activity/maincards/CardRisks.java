@@ -21,6 +21,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.text.Html;
 import android.view.View;
 import android.view.animation.Animation;
@@ -32,6 +33,7 @@ import android.widget.TextView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 
+import de.mhid.opensource.socialdistancemeter.BuildConfig;
 import de.mhid.opensource.socialdistancemeter.R;
 import de.mhid.opensource.socialdistancemeter.activity.MainActivity;
 import de.mhid.opensource.socialdistancemeter.services.DiagKeySyncService;
@@ -176,13 +178,18 @@ public class CardRisks {
         ImageView syncAnimation = mainActivity.findViewById(R.id.card_risks_sync_icon);
         syncAnimation.setImageDrawable(ContextCompat.getDrawable(mainActivity, R.drawable.round_sync_24));
         Animation animatedSyncAnimation = AnimationUtils.loadAnimation(mainActivity, R.anim.rotate_ccw);
+        animatedSyncAnimation.setRepeatCount(Animation.INFINITE);
         syncAnimation.startAnimation(animatedSyncAnimation);
 
         TextView syncDescription = mainActivity.findViewById(R.id.card_risks_sync_details);
         syncDescription.setText(description);
 
         ProgressBar syncProgress = mainActivity.findViewById(R.id.card_risks_sync_progress);
-        syncProgress.setProgress(progress);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            syncProgress.setProgress(progress, progress > 0);
+        } else {
+            syncProgress.setProgress(progress);
+        }
 
         ConstraintLayout syncStatusBlock = mainActivity.findViewById(R.id.card_risks_sync);
         syncStatusBlock.setVisibility(View.VISIBLE);
