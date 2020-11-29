@@ -49,7 +49,14 @@ import de.mhid.opensource.socialdistancemeter.services.DiagKeySyncService;
 import de.mhid.opensource.socialdistancemeter.utils.HexString;
 
 public class DiagKeySyncWorker extends Worker {
+    public final static String WORK_PARAMETER_BACKGROUND = "background";
+
     private static final ReentrantLock lock = new ReentrantLock();
+    public static boolean isRunning() {
+       synchronized (lock) {
+           return lock.isLocked();
+       }
+    }
 //    private static Date lastExecution = null;
     private static boolean lockConcurrency() {
         synchronized (lock) {
@@ -126,6 +133,13 @@ public class DiagKeySyncWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
+        boolean isSettingsSyncEnabled = sharedPreferences.getBoolean(getApplicationContext().getString(R.string.settings_key_risk_sync_enabled), true);
+        boolean isBackgroundSync = getInputData().getBoolean(WORK_PARAMETER_BACKGROUND, true);
+        if(isBackgroundSync && !isSettingsSyncEnabled) {
+            // if sync is disabled in settings -> skip background work
+            return Result.success();
+        }
+
         Log.i(getClass().getSimpleName(), "Starting to work ... :-)");
         String error = getApplicationContext().getString(R.string.card_risks_sync_status_error_unknown);
 

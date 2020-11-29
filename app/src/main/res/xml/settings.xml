@@ -46,4 +46,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             android:dependency="@string/settings_key_scan_location_enabled"
             android:summary="%s" />
     </PreferenceCategory>
+    <PreferenceCategory android:title="@string/settings_category_sync">
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="@string/settings_key_risk_sync_enabled"
+            android:title="@string/settings_title_risk_sync_enabled" />
+    </PreferenceCategory>
 </PreferenceScreen>

@@ -26,6 +26,7 @@ import android.os.IBinder;
 import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
 import androidx.work.Constraints;
+import androidx.work.Data;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
@@ -92,7 +93,7 @@ public class DiagKeySyncService extends Service {
         Constraints.Builder constraintBuilder = new Constraints.Builder()
                 .setRequiresBatteryNotLow(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            constraintBuilder = constraintBuilder.setRequiresDeviceIdle(true);
+            constraintBuilder.setRequiresDeviceIdle(true);
         }
         Constraints constraints = constraintBuilder.build();
 
@@ -107,8 +108,12 @@ public class DiagKeySyncService extends Service {
     }
 
     private void startOneTimeWork() {
+        Data.Builder data = new Data.Builder();
+        data.putBoolean(DiagKeySyncWorker.WORK_PARAMETER_BACKGROUND, false);
+
         OneTimeWorkRequest workRequest =
                 new OneTimeWorkRequest.Builder(DiagKeySyncWorker.class)
+                        .setInputData(data.build())
                         .build();
 
         WorkManager.getInstance(this)
@@ -131,6 +136,13 @@ public class DiagKeySyncService extends Service {
         sendBroadcast(sndDiagKeyCount);
     }
 
+    private void sendIntentSyncStatusUpdateDone() {
+        Intent sndSyncStatusUpdate = new Intent();
+        sndSyncStatusUpdate.setAction(CardRisks.INTENT_SYNC_STATUS_SYNC);
+        sndSyncStatusUpdate.putExtra(CardRisks.INTENT_SYNC_STATUS_SYNC__RUNNING, false);
+        getApplicationContext().sendBroadcast(sndSyncStatusUpdate);
+    }
+
     private void getUpdates() {
         // send last update
         sendIntentLastUpdate(sharedPreferences.getString(getString(R.string.internal_settings_key_last_scan_timestamp), null));
@@ -141,5 +153,10 @@ public class DiagKeySyncService extends Service {
             CwaDiagKeyCount diagKeyCount = db.cwaDatabase().cwaDiagKey().getCount();
             sendIntentDiagKeyCount(diagKeyCount.count);
         });
+
+        // check if work is running
+        if(!DiagKeySyncWorker.isRunning()) {
+            sendIntentSyncStatusUpdateDone();
+        }
     }
 }

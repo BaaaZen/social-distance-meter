@@ -21,6 +21,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.text.Html;
 import android.view.View;
@@ -32,6 +33,7 @@ import android.widget.TextView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
+import androidx.preference.PreferenceManager;
 
 import java.text.DateFormat;
 import java.util.Date;
@@ -59,11 +61,13 @@ public class CardRisks {
     public static final String INTENT_ENCOUNTERS_UPDATE = "encounters_update";
 
     private final MainActivity mainActivity;
+    private final SharedPreferences sharedPreferences;
 
     private List<CwaTokenRisk> riskList = null;
 
     public CardRisks(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
+        this.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mainActivity);
 
         init();
     }
@@ -192,7 +196,11 @@ public class CardRisks {
         syncAnimation.clearAnimation();
 
         ConstraintLayout syncButton = mainActivity.findViewById(R.id.card_risks_start_sync);
-        syncButton.setVisibility(View.VISIBLE);
+        if(sharedPreferences.getBoolean(mainActivity.getString(R.string.settings_key_risk_sync_enabled), true)) {
+            syncButton.setVisibility(View.GONE);
+        } else {
+            syncButton.setVisibility(View.VISIBLE);
+        }
     }
 
     private void setSyncRunning(String description, int progress) {
@@ -231,7 +239,11 @@ public class CardRisks {
         syncAnimation.clearAnimation();
 
         ConstraintLayout syncButton = mainActivity.findViewById(R.id.card_risks_start_sync);
-        syncButton.setVisibility(View.VISIBLE);
+        if(sharedPreferences.getBoolean(mainActivity.getString(R.string.settings_key_risk_sync_enabled), true)) {
+            syncButton.setVisibility(View.GONE);
+        } else {
+            syncButton.setVisibility(View.VISIBLE);
+        }
     }
 
     private void updateEncounters(boolean force) {
@@ -273,9 +285,9 @@ public class CardRisks {
                 encountersCount.setText(Html.fromHtml(sCount));
 
                 TextView encountersRecent = mainActivity.findViewById(R.id.card_risks_encounters_details_recent_details);
-                Long maxTimestamp = null;
+                long maxTimestamp = 0;
                 for(CwaTokenRisk risk : riskList) {
-                    if(maxTimestamp == null || risk.maxLocalTimestamp > maxTimestamp) maxTimestamp = risk.maxLocalTimestamp;
+                    if(risk.maxLocalTimestamp > maxTimestamp) maxTimestamp = risk.maxLocalTimestamp;
                 }
                 Date d = new Date(maxTimestamp);
                 String date = DateFormat.getDateInstance(DateFormat.MEDIUM).format(d);

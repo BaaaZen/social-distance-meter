@@ -69,6 +69,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <item>@string/settings_title_scan_location_period_value_15min_rec</item>
         <item>@string/settings_title_scan_location_period_value_gathering</item>
     </string-array>
+    <string name="settings_category_sync">Diagnosis keys</string>
+    <string name="settings_title_risk_sync_enabled">Synchronization enabled</string>
 
     <!-- CARD: current informations -->
     <string name="card_current_title">Current environment</string>
