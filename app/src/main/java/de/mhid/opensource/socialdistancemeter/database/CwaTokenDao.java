@@ -45,6 +45,9 @@ public interface CwaTokenDao {
   @Query("SELECT * FROM cwa_token WHERE diagkey_id IS NULL AND rolling_timestamp >= :minRollingTimestamp AND rolling_timestamp < :maxRollingTimestamp ORDER BY rolling_timestamp ASC, mac ASC, token ASC")
   List<CwaToken> getRollingSection(long minRollingTimestamp, long maxRollingTimestamp);
 
+  @Query("SELECT diagkey_id as diagKeyId, MIN(local_timestamp) as minLocalTimestamp, MAX(local_timestamp) as maxLocalTimestamp FROM cwa_token WHERE diagkey_id = null GROUP BY diagkey_id;")
+  List<CwaTokenRisk> getRisks();
+
   @Query("DELETE FROM cwa_token WHERE utc_timestamp < Date(:date)")
   void purgeOldTokens(Date date);
 }

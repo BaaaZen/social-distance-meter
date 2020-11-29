@@ -33,9 +33,14 @@ import android.widget.TextView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 
-import de.mhid.opensource.socialdistancemeter.BuildConfig;
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.List;
+
 import de.mhid.opensource.socialdistancemeter.R;
 import de.mhid.opensource.socialdistancemeter.activity.MainActivity;
+import de.mhid.opensource.socialdistancemeter.database.CwaTokenRisk;
+import de.mhid.opensource.socialdistancemeter.database.Database;
 import de.mhid.opensource.socialdistancemeter.services.DiagKeySyncService;
 
 public class CardRisks {
@@ -51,7 +56,11 @@ public class CardRisks {
     public static final String INTENT_SYNC_STATUS_SYNC__DESCRIPTION = "description";
     public static final String INTENT_SYNC_STATUS_SYNC__PROGRESS = "progress";
 
+    public static final String INTENT_ENCOUNTERS_UPDATE = "encounters_update";
+
     private final MainActivity mainActivity;
+
+    private List<CwaTokenRisk> riskList = null;
 
     public CardRisks(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
@@ -64,6 +73,8 @@ public class CardRisks {
         registerIntentReceivers();
 
         triggerUpdates();
+
+        updateEncounters(false);
     }
 
     private void triggerUpdates() {
@@ -131,6 +142,19 @@ public class CardRisks {
             }
         };
         mainActivity.registerReceiver(rcvSyncStatusUpdate, rcvSyncStatusUpdateFilter);
+
+        // register encounters update receiver from service
+        IntentFilter rcvEncountersUpdateFilter = new IntentFilter();
+        rcvDiagKeyCountFilter.addAction(INTENT_ENCOUNTERS_UPDATE);
+        BroadcastReceiver rcvEncountersUpdate = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if(intent != null) {
+                    updateEncounters(true);
+                }
+            }
+        };
+        mainActivity.registerReceiver(rcvEncountersUpdate, rcvEncountersUpdateFilter);
     }
 
     private void registerClickListeners() {
@@ -208,5 +232,69 @@ public class CardRisks {
 
         ConstraintLayout syncButton = mainActivity.findViewById(R.id.card_risks_start_sync);
         syncButton.setVisibility(View.VISIBLE);
+    }
+
+    private void updateEncounters(boolean force) {
+        List<CwaTokenRisk> riskList = getRiskList();
+        if(force || riskList == null) {
+            ConstraintLayout encountersNoRisk = mainActivity.findViewById(R.id.card_risks_encounters_no_risk);
+            encountersNoRisk.setVisibility(View.GONE);
+
+            ConstraintLayout encountersDetails = mainActivity.findViewById(R.id.card_risks_encounters_details);
+            encountersDetails.setVisibility(View.GONE);
+
+            ConstraintLayout encountersWaiting = mainActivity.findViewById(R.id.card_risks_encounters_waiting);
+            encountersWaiting.setVisibility(View.VISIBLE);
+
+            Database db = Database.getInstance(mainActivity);
+            db.runAsync(() -> {
+                final List<CwaTokenRisk> riskList1 = db.cwaDatabase().cwaToken().getRisks();
+                setRiskList(riskList1);
+                updateEncountersUiFromList(riskList1);
+            });
+        } else {
+            updateEncountersUiFromList(riskList);
+        }
+    }
+
+    private void updateEncountersUiFromList(List<CwaTokenRisk> riskList) {
+        mainActivity.runOnUiThread(() -> {
+            ConstraintLayout encountersWaiting = mainActivity.findViewById(R.id.card_risks_encounters_waiting);
+            encountersWaiting.setVisibility(View.GONE);
+
+            ConstraintLayout encountersNoRisk = mainActivity.findViewById(R.id.card_risks_encounters_no_risk);
+            ConstraintLayout encountersDetails = mainActivity.findViewById(R.id.card_risks_encounters_details);
+            if(riskList == null || riskList.size() < 1) {
+                encountersNoRisk.setVisibility(View.VISIBLE);
+                encountersDetails.setVisibility(View.GONE);
+            } else {
+                TextView encountersCount = mainActivity.findViewById(R.id.card_risks_encounters_details_count_details);
+                String sCount = mainActivity.getString(R.string.card_risks_encounters_details_count, "<b>" + riskList.size() + "</b>");
+                encountersCount.setText(Html.fromHtml(sCount));
+
+                TextView encountersRecent = mainActivity.findViewById(R.id.card_risks_encounters_details_recent_details);
+                Long maxTimestamp = null;
+                for(CwaTokenRisk risk : riskList) {
+                    if(maxTimestamp == null || risk.maxLocalTimestamp > maxTimestamp) maxTimestamp = risk.maxLocalTimestamp;
+                }
+                Date d = new Date(maxTimestamp);
+                String date = DateFormat.getDateInstance(DateFormat.MEDIUM).format(d);
+                String time = DateFormat.getTimeInstance(DateFormat.SHORT).format(d);
+                String dateTime = mainActivity.getString(R.string.date_time_format, date, time);
+                String sRecent = mainActivity.getString(R.string.card_risks_encounters_details_recent, "<b>" + dateTime + "</b>");
+                encountersRecent.setText(Html.fromHtml(sRecent));
+
+                encountersNoRisk.setVisibility(View.GONE);
+                encountersDetails.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    private synchronized void setRiskList(List<CwaTokenRisk> riskList) {
+        this.riskList = riskList;
+    }
+
+    private synchronized List<CwaTokenRisk> getRiskList() {
+        return riskList;
     }
 }

@@ -169,6 +169,9 @@ public class DiagKeySyncWorker extends Worker {
                 // trigger hide sync status
                 sendIntentSyncStatusUpdateDone();
 
+                // trigger update encounters
+                sendIntentEncountersUpdate();
+
                 return Result.success();
             } else {
                 // show sync error
@@ -209,6 +212,12 @@ public class DiagKeySyncWorker extends Worker {
         sndSyncStatusUpdate.putExtra(CardRisks.INTENT_SYNC_STATUS_SYNC__DESCRIPTION, description);
         sndSyncStatusUpdate.putExtra(CardRisks.INTENT_SYNC_STATUS_SYNC__PROGRESS, progress);
         getApplicationContext().sendBroadcast(sndSyncStatusUpdate);
+    }
+
+    private void sendIntentEncountersUpdate() {
+        Intent sndEncountersUpdate = new Intent();
+        sndEncountersUpdate.setAction(CardRisks.INTENT_ENCOUNTERS_UPDATE);
+        getApplicationContext().sendBroadcast(sndEncountersUpdate);
     }
 
     private boolean downloadDailyKeys(List<Country> countries) {

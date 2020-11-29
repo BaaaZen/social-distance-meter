@@ -33,8 +33,7 @@
     <string name="card_risks_last_update_date">Letzte Synchronisierung: %1$s</string>
     <string name="card_risks_diag_key_count">Anzahl der Diagnoseschlüssel: %1$s</string>
     <string name="card_risks_start_sync_command">Diagnoseschlüssel synchronisieren</string>
-    <string name="card_risks_no_risk_caption">Kein Risiko erkannt</string>
-    <string name="card_risks_sync_status_starting">Beginne Synchronisierung ...</string>
+        <string name="card_risks_sync_status_starting">Beginne Synchronisierung ...</string>
     <string name="card_risks_sync_status_download_country">Lade Schlüssel für %1$s herunter</string>
     <string name="card_risks_sync_status_comparing">Vergleiche Diagnoseschlüssel (%1$d%%)</string>
     <string name="card_risks_sync_status_error_unknown">Unbekannter Fehler</string>

@@ -99,11 +99,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <string name="card_risks_last_update_date">Last synchronization: %1$s</string>
     <string name="card_risks_diag_key_count"># of diagnosis keys: %1$s</string>
     <string name="card_risks_start_sync_command">Synchronize diagnosis keys</string>
-    <string name="card_risks_no_risk_caption">No risk found</string>
     <string name="card_risks_sync_status_starting">Starting to sync ...</string>
     <string name="card_risks_sync_status_download_country">Downloading keys for %1$s</string>
     <string name="card_risks_sync_status_comparing">Comparing diagnosis keys (%1$d%%)</string>
     <string name="card_risks_sync_status_error_unknown">Unknown error</string>
     <string name="card_risks_sync_status_error_download">Error downloading diagnosis keys.</string>
     <string name="card_risks_sync_status_error_checking">Error checking diagnosis keys.</string>
+    <string name="card_risks_encounters_no_risk">No risk encounters detected</string>
+    <string name="card_risks_encounters_waiting">Loading encounters ...</string>
+    <string name="card_risks_encounters_details_count"># of encounters: %1$s</string>
+    <string name="card_risks_encounters_details_recent">Recent encounter: %1$s</string>
+    <string name="card_risks_encounters_details_command">Show encounter details</string>
 </resources>
