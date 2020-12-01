@@ -33,7 +33,7 @@ public class CurrentDistanceView extends AbstractView {
     public CurrentDistanceView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        userSelf = VectorDrawableCompat.create(getContext().getResources(), R.drawable.round_person_outline_24, null);
+        userSelf = VectorDrawableCompat.create(getContext().getResources(), R.drawable.round_person_24, null);
         user1 = VectorDrawableCompat.create(getContext().getResources(), R.drawable.round_person_24, null);
         user2 = VectorDrawableCompat.create(getContext().getResources(), R.drawable.round_people_24, null);
         user3 = VectorDrawableCompat.create(getContext().getResources(), R.drawable.round_groups_24, null);
@@ -71,7 +71,8 @@ public class CurrentDistanceView extends AbstractView {
         canvas.drawLine(width, xAxisYCoordinate, width-arrowSize, xAxisYCoordinate+arrowSize, pAxis);
 
         // draw x-axis label
-        canvas.drawText("Abstand", (float)width/2, xAxisYCoordinate - pText.getFontMetrics().ascent + arrowSize, pText);
+        String distanceCaption = getResources().getString(R.string.card_current_distance);
+        canvas.drawText(distanceCaption, (float)width/2, xAxisYCoordinate - pText.getFontMetrics().ascent + arrowSize, pText);
 
         float xPerPercent = (width - iconSizeSelf - iconSizeMin)/100;
         List<BleScanService.CwaScanResult> sortedResults;

@@ -84,6 +84,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <item quantity="one">@string/card_current_users_count_pl_one</item>
         <item quantity="other">@string/card_current_users_count_pl_other</item>
     </plurals>
+    <string name="card_current_distance">Distance</string>
 
     <!-- CARD: permissions -->
     <string name="card_permissions_title">Required permissions</string>
