@@ -25,7 +25,6 @@ import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Shader;
 import android.util.AttributeSet;
-import android.view.View;
 
 import androidx.annotation.Nullable;
 
@@ -37,47 +36,27 @@ import java.util.List;
 
 import de.mhid.opensource.socialdistancemeter.database.CwaTokenStatistics;
 import de.mhid.opensource.socialdistancemeter.database.Database;
+import de.mhid.opensource.socialdistancemeter.utils.Rssi;
 
-public class HistoryGraphView extends View {
+public class HistoryGraphView extends AbstractView {
     private List<CwaTokenStatistics> statisticsList = null;
     private Date lastUpdateTimestamp = null;
 
     private final ArrayList<Integer> colors = new ArrayList<>();
     private final HashSet<String> mac = new HashSet<>();
 
-    private Paint pBlockDiagram;
-    private Paint pText;
-    private Paint pAxis;
+    private final Paint pBlockDiagram = new Paint();
 
-    float margin;
-    float markerLen;
-    float axisWidth;
-    float blockSpacing;
+    private final float markerLen;
+    private final float blockSpacing;
 
     public HistoryGraphView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        init();
-
-        update();
-    }
-
-    private void init() {
-        margin = 3*getResources().getDisplayMetrics().density;
         markerLen = 3*getResources().getDisplayMetrics().density;
-        axisWidth = 1*getResources().getDisplayMetrics().density;
         blockSpacing = 1*getResources().getDisplayMetrics().density;
 
-        pBlockDiagram = new Paint();
-
-        pText = new Paint();
-        pText.setColor(Color.BLACK);
-        pText.setTextSize(40);
-        pText.setTextAlign(Paint.Align.CENTER);
-
-        pAxis = new Paint();
-        pAxis.setColor(Color.BLACK);
-        pAxis.setStrokeWidth(axisWidth);
+        update();
     }
 
     @Override
@@ -161,29 +140,9 @@ public class HistoryGraphView extends View {
                 }
             }
             mac.add(statistics.mac);
-            colors.add(getColorForRssi(statistics.rssi));
+            colors.add(Rssi.getColorForRssi(statistics.rssi));
         }
         paintBlock(canvas, blockX+blockSpacing, yAxis-axisWidth/2 - (yAxis-axisWidth/2)/maxItemsPerRollingTimestamp*mac.size(), blockX+slotWidth-blockSpacing, yAxis-axisWidth/2, colors, alpha);
-    }
-
-    private int getColorForRssi(int rssi) {
-        int r;
-        int g;
-        if(rssi >= -65) {
-            r = 255;
-            g = 0;
-        } else if(rssi >= -85) {
-            r = 255;
-            g = 255 - (rssi-(-85))*255/20;
-        } else if(rssi >= -95) {
-            r = (rssi-(-95))*255/10;
-            g = 255;
-        } else {
-            r = 0;
-            g = 255;
-        }
-
-        return Color.rgb(r, g, 0);
     }
 
     private void paintBlock(Canvas canvas, float left, float top, float right, float bottom, ArrayList<Integer> colors, int alpha) {

@@ -54,6 +54,14 @@ public class BleScanService extends Service {
 
   public static final String INTENT_START_MAIN_ACTIVITY = "request_user_count";
 
+  private static HashMap<String, CwaScanResult> staticScanResults = null;
+  private static synchronized void setScanResults(HashMap<String, CwaScanResult> scanResults) {
+    BleScanService.staticScanResults = scanResults;
+  }
+  public static synchronized HashMap<String, CwaScanResult> getScanResults() {
+    return staticScanResults;
+  }
+
   private BleScanner bleScanner = null;
   private SharedPreferences sharedPreferences = null;
 
@@ -178,7 +186,7 @@ public class BleScanService extends Service {
     return null;
   }
 
-  private static class CwaScanResult {
+  public static class CwaScanResult implements Comparable<CwaScanResult> {
     private final List<Integer> rssiHistory = new ArrayList<>();
     public final byte[] token;
     private final Date localTimestamp = new Date();
@@ -186,6 +194,11 @@ public class BleScanService extends Service {
 
     public CwaScanResult(byte[] token) {
       this.token = token;
+    }
+
+    @Override
+    public int compareTo(CwaScanResult o) {
+      return getRssi() - o.getRssi();
     }
 
     public void addRssi(int rssi) {
@@ -241,6 +254,9 @@ public class BleScanService extends Service {
     int userCount = scanResults.size();
 
     Log.d(getClass().getSimpleName(), "scan finished, user count = " + userCount);
+
+    // store current scan results
+    setScanResults(scanResults);
 
     // update recent user count
     recentUserCount = userCount;

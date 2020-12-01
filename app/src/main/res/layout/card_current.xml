@@ -53,44 +53,54 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/round_nature_people_24" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/card_current_info"
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             app:layout_constraintTop_toBottomOf="@+id/card_current_title">
 
-            <ImageView
-                android:id="@+id/current_users_icon"
-                android:layout_width="wrap_content"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/card_current_info"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/round_person_outline_24" />
+                android:layout_marginTop="8dp">
 
-            <TextView
-                android:id="@+id/current_users_count"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginBottom="8dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/current_users_icon"
-                app:layout_constraintTop_toTopOf="parent" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                <ImageView
+                    android:id="@+id/current_users_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/round_person_outline_24" />
 
-        <de.mhid.opensource.socialdistancemeter.views.HistoryGraphView
-            android:id="@+id/current_history"
-            android:layout_width="match_parent"
-            android:layout_height="100dp"
-            app:layout_constraintTop_toBottomOf="@id/card_current_info" />
+                <TextView
+                    android:id="@+id/current_users_count"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/current_users_icon"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <de.mhid.opensource.socialdistancemeter.views.CurrentDistanceView
+                android:id="@+id/current_distances"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:layout_marginTop="8dp" />
+
+            <de.mhid.opensource.socialdistancemeter.views.HistoryGraphView
+                android:id="@+id/current_history"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:layout_marginTop="8dp" />
+
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

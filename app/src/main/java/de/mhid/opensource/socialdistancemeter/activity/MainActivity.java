@@ -46,6 +46,7 @@ import de.mhid.opensource.socialdistancemeter.R;
 import de.mhid.opensource.socialdistancemeter.activity.maincards.CardRisks;
 import de.mhid.opensource.socialdistancemeter.services.BleScanService;
 import de.mhid.opensource.socialdistancemeter.services.DiagKeySyncService;
+import de.mhid.opensource.socialdistancemeter.views.CurrentDistanceView;
 import de.mhid.opensource.socialdistancemeter.views.HistoryGraphView;
 
 public class MainActivity extends AppCompatActivity {
@@ -82,7 +83,10 @@ public class MainActivity extends AppCompatActivity {
           int count = intent.getIntExtra(INTENT_SCAN_RESULT_COUNT__COUNT, -1);
           updateUserCount(count);
 
-          HistoryGraphView hgv = (HistoryGraphView)findViewById(R.id.current_history);
+          CurrentDistanceView cdv = findViewById(R.id.current_distances);
+          cdv.update();
+
+          HistoryGraphView hgv = findViewById(R.id.current_history);
           hgv.update();
         }
       }
