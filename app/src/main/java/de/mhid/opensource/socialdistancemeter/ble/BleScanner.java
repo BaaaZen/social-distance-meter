@@ -55,13 +55,10 @@ public class BleScanner {
 
   private BleScanService service;
 
-  private Handler handler = new Handler(Looper.myLooper());
+  private final Handler handler = new Handler(Looper.myLooper());
   private boolean scanning = false;
   private boolean running = false;
   private long scanPeriod = 50000;
-  private boolean scanLocationEnabled = false;
-  private long scanLocationPeriod = 5*60000;
-  private boolean scanLocationOnGathering = false;
 
   private final Runnable runScheduledScan = () -> {
     Log.i("scheduleScan", "running now!");
@@ -141,15 +138,6 @@ public class BleScanner {
 
   private synchronized long getPeriodWaitTime() {
     return scanPeriod;
-  }
-
-  public synchronized void setScanLocationEnabled(boolean b) {
-    scanLocationEnabled = b;
-  }
-
-  public synchronized void setScanLocationPeriod(long period, boolean onGathering) {
-    scanLocationPeriod = period;
-    scanLocationOnGathering = onGathering;
   }
 
   private void scan_Older() {

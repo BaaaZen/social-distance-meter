@@ -27,10 +27,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.Looper;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -55,15 +60,18 @@ public class BleScanService extends Service {
   public static final String INTENT_START_MAIN_ACTIVITY = "request_user_count";
 
   private static HashMap<String, CwaScanResult> staticScanResults = null;
+
   private static synchronized void setScanResults(HashMap<String, CwaScanResult> scanResults) {
     BleScanService.staticScanResults = scanResults;
   }
+
   public static synchronized HashMap<String, CwaScanResult> getScanResults() {
     return staticScanResults;
   }
 
   private BleScanner bleScanner = null;
   private SharedPreferences sharedPreferences = null;
+  private LocationManager locationManager = null;
 
   private final SharedPreferences.OnSharedPreferenceChangeListener sharedPreferenceChangeListener = (sharedPreferences1, key) -> updateFromPreferences(key);
 
@@ -75,11 +83,11 @@ public class BleScanService extends Service {
             PackageManager.PERMISSION_GRANTED;
 
     // get current user count
-    if(intent.getAction() != null && intent.getAction().equals(INTENT_START_MAIN_ACTIVITY)) {
-      if(hasLocationPermission) {
+    if (intent.getAction() != null && intent.getAction().equals(INTENT_START_MAIN_ACTIVITY)) {
+      if (hasLocationPermission) {
         // send update user count
         // -> do we have a current user count?
-        if(recentUserCount != null) {
+        if (recentUserCount != null) {
           // we have a current user count
           // -> send intent
           sendScanResultUserCount(recentUserCount);
@@ -92,7 +100,7 @@ public class BleScanService extends Service {
     }
 
     // check if we need to request any permissions
-    if(!hasLocationPermission || !hasBackgroundPermission) {
+    if (!hasLocationPermission || !hasBackgroundPermission) {
       // missing permission
       // -> request permission
       sendIntentRequestPermission();
@@ -110,12 +118,16 @@ public class BleScanService extends Service {
     sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
     sharedPreferences.registerOnSharedPreferenceChangeListener(sharedPreferenceChangeListener);
 
+    locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
     updateFromPreferences(null);
   }
 
   @Override
   public void onDestroy() {
     super.onDestroy();
+
+    locationManager = null;
 
     sharedPreferences.unregisterOnSharedPreferenceChangeListener(sharedPreferenceChangeListener);
     sharedPreferences = null;
@@ -126,9 +138,9 @@ public class BleScanService extends Service {
 
   private void updateFromPreferences(String updatedKey) {
     // scan enabled
-    if(updatedKey == null || updatedKey.equals(getString(R.string.settings_key_scan_enabled))) {
+    if (updatedKey == null || updatedKey.equals(getString(R.string.settings_key_scan_enabled))) {
       boolean scanEnabled = sharedPreferences.getBoolean(getString(R.string.settings_key_scan_enabled), true);
-      if(scanEnabled) {
+      if (scanEnabled) {
         bleScanner.start();
       } else {
         bleScanner.shutdown();
@@ -138,7 +150,7 @@ public class BleScanService extends Service {
     }
 
     // scan period
-    if(updatedKey == null || updatedKey.equals(getString(R.string.settings_key_scan_period))) {
+    if (updatedKey == null || updatedKey.equals(getString(R.string.settings_key_scan_period))) {
       String scanPeriod = sharedPreferences.getString(getString(R.string.settings_key_scan_period), getString(R.string.settings_list_scan_period_default_value));
       String[] scanPeriodValues = getResources().getStringArray(R.array.settings_list_scan_period_values);
       long scanPeriodValue = 60000;
@@ -153,31 +165,6 @@ public class BleScanService extends Service {
       }
       bleScanner.setPeriod(scanPeriodValue);
     }
-
-    // scan location enabled
-    if(updatedKey == null || updatedKey.equals(getString(R.string.settings_key_scan_location_enabled))) {
-      boolean scanLocationEnabled = sharedPreferences.getBoolean(getString(R.string.settings_key_scan_location_enabled), false);
-      bleScanner.setScanLocationEnabled(scanLocationEnabled);
-    }
-
-    // scan location period
-    if(updatedKey == null || updatedKey.equals(getString(R.string.settings_key_scan_location_period))) {
-      String scanLocationPeriod = sharedPreferences.getString(getString(R.string.settings_key_scan_location_period), getString(R.string.settings_list_scan_location_period_default_value));
-      String[] scanLocationPeriodValues = getResources().getStringArray(R.array.settings_list_scan_location_period_values);
-      long scanLocationPeriodValue = 5 * 60000;
-      boolean scanLocationPeriodOnGathering = false;
-      if (scanLocationPeriod.equals(scanLocationPeriodValues[0])) {
-        scanLocationPeriodValue = 0;
-      } else if (scanLocationPeriod.equals(scanLocationPeriodValues[1])) {
-        scanLocationPeriodValue = 5 * 60000;
-      } else if (scanLocationPeriod.equals(scanLocationPeriodValues[2])) {
-        scanLocationPeriodValue = 15 * 60000;
-      } else if (scanLocationPeriod.equals(scanLocationPeriodValues[3])) {
-        scanLocationPeriodValue = 5 * 60000;
-        scanLocationPeriodOnGathering = true;
-      }
-      bleScanner.setScanLocationPeriod(scanLocationPeriodValue, scanLocationPeriodOnGathering);
-    }
   }
 
   @Nullable
@@ -188,9 +175,9 @@ public class BleScanService extends Service {
 
   public static class CwaScanResult implements Comparable<CwaScanResult> {
     private final List<Integer> rssiHistory = new ArrayList<>();
-    public final byte[] token;
+    private final byte[] token;
     private final Date localTimestamp = new Date();
-    int utcOffset = TimeZone.getDefault().getRawOffset() + TimeZone.getDefault().getDSTSavings();
+    private final int utcOffset = TimeZone.getDefault().getRawOffset() + TimeZone.getDefault().getDSTSavings();
 
     public CwaScanResult(byte[] token) {
       this.token = token;
@@ -208,7 +195,7 @@ public class BleScanService extends Service {
     public int getRssi() {
       int rssiItems = 0;
       int rssiSum = 0;
-      for(int rssi : rssiHistory) {
+      for (int rssi : rssiHistory) {
         rssiSum += rssi;
         rssiItems++;
       }
@@ -217,13 +204,16 @@ public class BleScanService extends Service {
     }
 
     public long getRollingTimestamp() {
-      return getUTCTimestamp().getTime() / (10*60*1000);
+      return getUTCTimestamp().getTime() / (10 * 60 * 1000);
     }
 
     public Date getLocalTimestamp() {
       return localTimestamp;
     }
-    public Date getUTCTimestamp() { return new Date(getLocalTimestamp().getTime() - utcOffset); }
+
+    public Date getUTCTimestamp() {
+      return new Date(getLocalTimestamp().getTime() - utcOffset);
+    }
 
     public String getHexToken() {
       return HexString.toHexString(token);
@@ -235,7 +225,7 @@ public class BleScanService extends Service {
 
   public void scanBegin() {
     Log.d(getClass().getSimpleName(), "scan begin");
-    if(recentUserCount == null) {
+    if (recentUserCount == null) {
       sendScanResultUserCount(MainActivity.COUNT_ERROR_SCANNING_IN_PROGRESS);
     }
 
@@ -244,8 +234,8 @@ public class BleScanService extends Service {
 
   public void scanResult(String mac, int rssi, byte[] data) {
     Log.d(getClass().getSimpleName(), "scanResult: MAC = " + mac + ", RSSI = " + rssi);
-    if(scanResults == null) return;
-    if(!scanResults.containsKey(mac)) scanResults.put(mac, new CwaScanResult(data));
+    if (scanResults == null) return;
+    if (!scanResults.containsKey(mac)) scanResults.put(mac, new CwaScanResult(data));
     CwaScanResult device = scanResults.get(mac);
     device.addRssi(rssi);
   }
@@ -264,10 +254,13 @@ public class BleScanService extends Service {
     // send scan result intent
     sendScanResultUserCount(userCount);
 
+    // get current location
+    Location location = getLocation(userCount >= 5);
+
     // write scan results to database
     Database db = Database.getInstance(this);
     db.runAsync(() -> {
-      for(String mac : scanResults.keySet()) {
+      for (String mac : scanResults.keySet()) {
         CwaScanResult scanResult = scanResults.get(mac);
 
         // generate database object
@@ -279,10 +272,79 @@ public class BleScanService extends Service {
         dbCwaToken.utcTimestamp = scanResult.getUTCTimestamp();
         dbCwaToken.token = scanResult.getHexToken();
 
+        if(location != null) {
+          dbCwaToken.longitude = location.getLongitude();
+          dbCwaToken.latitude = location.getLatitude();
+        }
+
         // insert in database
         db.cwaDatabase().cwaToken().insert(dbCwaToken);
       }
     });
+  }
+
+  private Location getLocation(boolean gathering) {
+    boolean locationActive = sharedPreferences.getBoolean(getString(R.string.settings_key_scan_location_enabled), false);
+
+    // scanning location disabled?
+    if (!locationActive) return null;
+
+    // do we have permission to get location?
+    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+      return null;
+    }
+
+    boolean locationGPS = sharedPreferences.getBoolean(getString(R.string.settings_key_scan_location_use_gps), false);
+    if(locationGPS && !locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) locationGPS = false;
+
+    // first try to get a recent location via passive provide
+    Location location = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+    if(location == null || (locationGPS && !location.getProvider().equals(LocationManager.GPS_PROVIDER))) {
+      // no location from passive service available or not accurate enough
+      location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+    }
+
+    String scanLocationPeriod = sharedPreferences.getString(getString(R.string.settings_key_scan_location_period), getString(R.string.settings_list_scan_location_period_default_value));
+    String[] scanLocationPeriodValues = getResources().getStringArray(R.array.settings_list_scan_location_period_values);
+    int scanLocationMinPeriodValue = 5;
+    int scanLocationMaxPeriodValue = 5;
+    boolean scanLocationPeriodOnGathering = false;
+    if (scanLocationPeriod.equals(scanLocationPeriodValues[0])) {
+      scanLocationMinPeriodValue = 1;
+      scanLocationMaxPeriodValue = 5;
+    } else if (scanLocationPeriod.equals(scanLocationPeriodValues[1])) {
+      scanLocationMinPeriodValue = 5;
+      scanLocationMaxPeriodValue = 5;
+    } else if (scanLocationPeriod.equals(scanLocationPeriodValues[2])) {
+      scanLocationMinPeriodValue = 15;
+      scanLocationMaxPeriodValue = 15;
+    } else if (scanLocationPeriod.equals(scanLocationPeriodValues[3])) {
+      scanLocationMinPeriodValue = 5;
+      scanLocationMaxPeriodValue = 15;
+      scanLocationPeriodOnGathering = true;
+    }
+
+    if(location != null && location.getTime() + scanLocationMinPeriodValue*60*1000 > new Date().getTime()) {
+      // location is very current - perfect!
+      // -> less than scanLocationMinPeriodValue minutes old
+      return location;
+    }
+
+    if(location == null ||
+            (scanLocationPeriodOnGathering && gathering) ||
+            location.getTime() + scanLocationMaxPeriodValue*60*1000 < new Date().getTime()) {
+      // * no location
+      // * gathering detected (where trigger is enabled)
+      // * location is older than scanLocationMaxPeriodValue minutes
+      // -> update location
+      if(locationGPS) {
+        locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, location1 -> { }, Looper.getMainLooper());
+      } else {
+        locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, location1 -> { }, Looper.getMainLooper());
+      }
+    }
+
+    return location;
   }
 
   public void scanPermissionError() {

@@ -58,6 +58,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <item>@string/settings_title_scan_period_value_5min</item>
     </string-array>
     <string name="settings_title_scan_location_active">Record location enabled</string>
+    <string name="settings_title_scan_location_use_gps">Get location from GPS</string>
     <string name="settings_title_scan_location_period">Record location period</string>
     <string name="settings_title_scan_location_period_value_continuous">Continuous</string>
     <string name="settings_title_scan_location_period_value_5min">5 minutes</string>

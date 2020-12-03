@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <string name="settings_key_scan_enabled" translatable="false">settings_scan_enabled</string>
     <string name="settings_key_scan_period" translatable="false">settings_scan_period</string>
     <string name="settings_key_scan_location_enabled" translatable="false">settings_scan_location_enabled</string>
+    <string name="settings_key_scan_location_use_gps" translatable="false">settings_scan_location_use_gps</string>
     <string name="settings_key_scan_location_period" translatable="false">settings_scan_location_period</string>
     <string name="settings_key_risk_sync_enabled" translatable="false">settings_key_risk_sync_enabled</string>
 
