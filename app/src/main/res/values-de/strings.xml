@@ -63,4 +63,5 @@
     <string name="card_risks_encounters_details_count">Anzahl der Risikobegegnungen: %1$s</string>
     <string name="card_risks_encounters_details_recent">Letzte Risikobegegnung: %1$s</string>
     <string name="card_risks_encounters_details_command">Details zu Begegnungen anzeigen</string>
+    <string name="settings_title_scan_location_use_gps">Positionsbestimmung mit GPS</string>
 </resources>
