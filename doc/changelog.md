@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.0.4 (Alpha)
+* Prune collected tokens from database once a day
+
 ## 0.0.3 (Alpha)
 * Location recording
 * Fix for faulty automatic synchronisation

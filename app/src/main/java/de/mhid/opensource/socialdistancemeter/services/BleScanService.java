@@ -34,12 +34,17 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.preference.PreferenceManager;
+import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 import de.mhid.opensource.socialdistancemeter.R;
 import de.mhid.opensource.socialdistancemeter.activity.MainActivity;
@@ -47,10 +52,13 @@ import de.mhid.opensource.socialdistancemeter.ble.BleScanner;
 import de.mhid.opensource.socialdistancemeter.database.CwaToken;
 import de.mhid.opensource.socialdistancemeter.database.Database;
 import de.mhid.opensource.socialdistancemeter.notification.NotificationChannelHelper;
+import de.mhid.opensource.socialdistancemeter.services.work.PurgeTokenFromDatabaseWorker;
 import de.mhid.opensource.socialdistancemeter.utils.HexString;
 
 public class BleScanService extends Service {
-  public static final String INTENT_START_MAIN_ACTIVITY = "request_user_count";
+  public final static String INTENT_START_MAIN_ACTIVITY = "request_user_count";
+
+  private final static String PERIODIC_PRUNE_WORK_NAME = "periodic_prune_token_from_database_work";
 
   private static HashMap<String, CwaScanResult> staticScanResults = null;
 
@@ -116,12 +124,16 @@ public class BleScanService extends Service {
 
     locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
+    createPruneWork();
+
     updateFromPreferences(null);
   }
 
   @Override
   public void onDestroy() {
     super.onDestroy();
+
+    destroyPruneWork();
 
     locationManager = null;
 
@@ -130,6 +142,26 @@ public class BleScanService extends Service {
 
     bleScanner.shutdown();
     bleScanner = null;
+  }
+
+  private void createPruneWork() {
+    Constraints constraints = new Constraints.Builder()
+      .setRequiresBatteryNotLow(true)
+      .build();
+
+    PeriodicWorkRequest workRequest =
+            new PeriodicWorkRequest.Builder(PurgeTokenFromDatabaseWorker.class, 1, TimeUnit.DAYS, 12, TimeUnit.HOURS)
+                  .setConstraints(constraints)
+                  .setInitialDelay(10, TimeUnit.MINUTES)
+                  .build();
+
+    WorkManager.getInstance(this)
+            .enqueueUniquePeriodicWork(PERIODIC_PRUNE_WORK_NAME, ExistingPeriodicWorkPolicy.KEEP, workRequest);
+  }
+
+  private void destroyPruneWork() {
+    WorkManager.getInstance(this)
+            .cancelUniqueWork(PERIODIC_PRUNE_WORK_NAME);
   }
 
   private void updateFromPreferences(String updatedKey) {
