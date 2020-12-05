@@ -90,6 +90,9 @@ public class DiagKeySyncService extends Service {
     public IBinder onBind(Intent intent) { return null; }
 
     private void initPeriodicWork() {
+        Data.Builder data = new Data.Builder();
+        data.putBoolean(DiagKeySyncWorker.WORK_PARAMETER_BACKGROUND, true);
+
         Constraints.Builder constraintBuilder = new Constraints.Builder()
                 .setRequiresBatteryNotLow(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -101,6 +104,7 @@ public class DiagKeySyncService extends Service {
                 new PeriodicWorkRequest.Builder(DiagKeySyncWorker.class, 3, TimeUnit.HOURS, 2, TimeUnit.HOURS)
                         .setConstraints(constraints)
                         .setInitialDelay(5, TimeUnit.MINUTES)
+                        .setInputData(data.build())
                         .build();
 
         WorkManager.getInstance(this)
