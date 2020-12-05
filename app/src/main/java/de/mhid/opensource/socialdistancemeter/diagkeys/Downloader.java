@@ -41,15 +41,12 @@ public class Downloader {
         try {
             if(connection.getResponseCode() != HttpURLConnection.HTTP_OK) throw new DownloadException("Got response code " + connection.getResponseCode() + " for HTTP request on URL " + url);
 
-            InputStream is = connection.getInputStream();
-            try {
+            try (InputStream is = connection.getInputStream()) {
                 while (true) {
                     int b = is.read();
                     if (b == -1) break;
                     os.write(b);
                 }
-            } finally {
-                is.close();
             }
         } finally {
             connection.disconnect();

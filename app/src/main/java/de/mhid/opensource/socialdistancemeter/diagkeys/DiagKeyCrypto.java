@@ -68,6 +68,7 @@ public class DiagKeyCrypto {
     }
 
     // algorithm inspired by https://en.wikipedia.org/wiki/HKDF#Example:_Python_implementation
+    @SuppressWarnings("SameParameterValue")
     private byte[] hkdf(byte[] key, byte[] salt, byte[] info, int outputLength) throws CryptoError {
         final int HASH_LEN = 32;
         if(salt == null) salt = new byte[outputLength];

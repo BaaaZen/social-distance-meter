@@ -28,6 +28,7 @@ import androidx.annotation.Nullable;
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -97,9 +98,7 @@ public class CurrentDistanceView extends AbstractView {
             sortedResults = sortedScanResults;
         }
         // reset counter
-        for(int i=0; i<drawDistanceCount.length; i++) {
-            drawDistanceCount[i] = 0;
-        }
+        Arrays.fill(drawDistanceCount, (byte) 0);
         int lastDistance = -1;
         float lastPosX = 0;
         for(BleScanService.CwaScanResult item : sortedResults) {

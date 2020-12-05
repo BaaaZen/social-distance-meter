@@ -19,8 +19,6 @@ package de.mhid.opensource.socialdistancemeter.diagkeys.countries;
 
 import android.util.Log;
 
-import com.google.protobuf.InvalidProtocolBufferException;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -37,11 +35,7 @@ import de.mhid.opensource.socialdistancemeter.diagkeys.Downloader;
 import de.mhid.opensource.socialdistancemeter.diagkeys.parser.TemporaryExposureKeyExportParser;
 
 public abstract class Country {
-    public final static Country[] countries = {
-            new Germany()
-    };
-
-    public class CountryDownloadException extends Exception {
+    public static class CountryDownloadException extends Exception {
         public CountryDownloadException(String s) { super(s); }
         public CountryDownloadException(String s, Throwable e) { super(s, e); }
     }
@@ -74,7 +68,7 @@ public abstract class Country {
                 dates.add(json.getString(i));
             }
 
-            return dates.toArray(new String[dates.size()]);
+            return dates.toArray(new String[0]);
         } catch (Downloader.DownloadException e) {
             Log.e(getClass().getSimpleName(), "Download error", e);
             return null;
@@ -130,15 +124,15 @@ public abstract class Country {
 
             // check header
             byte[] header = new byte[16];
-            bais.read(header);
+            int readCount = bais.read(header);
+            if(readCount == -1) {
+                throw new CountryDownloadException("Error while reading export.bin file from buffer");
+            }
             if(!Arrays.equals(header, "EK Export v1    ".getBytes())) {
                 throw new CountryDownloadException("File export.bin has invalid header");
             }
 
             return TemporaryExposureKeyExportParser.TemporaryExposureKeyExport.parseFrom(bais);
-        } catch (InvalidProtocolBufferException e) {
-            // invalid export.bin file
-            throw new CountryDownloadException("Error while parsing export.bin file", e);
         } catch (IOException e) {
             // invalid export.bin file
             throw new CountryDownloadException("Error while parsing export.bin file", e);

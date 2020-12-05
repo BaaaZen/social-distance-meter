@@ -46,6 +46,7 @@ import de.mhid.opensource.socialdistancemeter.database.CwaToken;
 import de.mhid.opensource.socialdistancemeter.database.CwaTokenMinRollingTimestamp;
 import de.mhid.opensource.socialdistancemeter.database.Database;
 import de.mhid.opensource.socialdistancemeter.diagkeys.countries.Country;
+import de.mhid.opensource.socialdistancemeter.diagkeys.countries.CountryList;
 import de.mhid.opensource.socialdistancemeter.diagkeys.parser.TemporaryExposureKeyExportParser;
 import de.mhid.opensource.socialdistancemeter.notification.NotificationChannelHelper;
 import de.mhid.opensource.socialdistancemeter.services.DiagKeySyncService;
@@ -173,7 +174,7 @@ public class DiagKeySyncWorker extends Worker {
         try {
             sendSyncStatusUpdate(getApplicationContext().getString(R.string.card_risks_sync_status_starting),0);
 
-            List<Country> countries = new ArrayList<>(Arrays.asList(Country.countries));
+            List<Country> countries = new ArrayList<>(Arrays.asList(CountryList.COUNTRIES));
 
             boolean success = downloadDailyKeys(countries);
             if(!success) error = getApplicationContext().getString(R.string.card_risks_sync_status_error_download);
@@ -371,6 +372,7 @@ public class DiagKeySyncWorker extends Worker {
             CwaDiagKey cwaDiagKey = new CwaDiagKey();
             cwaDiagKey.fileId = cwaCountryFileId;
             cwaDiagKey.keyData = HexString.toHexString(key.getKeyData().toByteArray());
+            //noinspection deprecation
             cwaDiagKey.transmissionRiskLevel = key.getTransmissionRiskLevel();
             cwaDiagKey.rollingStartIntervalNumber = key.getRollingStartIntervalNumber();
             cwaDiagKey.rollingPeriod = key.getRollingPeriod();

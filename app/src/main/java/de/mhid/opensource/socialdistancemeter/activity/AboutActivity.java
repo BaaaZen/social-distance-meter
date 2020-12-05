@@ -17,17 +17,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 package de.mhid.opensource.socialdistancemeter.activity;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import de.mhid.opensource.socialdistancemeter.AppInformation;
 import de.mhid.opensource.socialdistancemeter.R;
 import de.mhid.opensource.socialdistancemeter.utils.Markdown;
-import io.noties.markwon.Markwon;
 
 public class AboutActivity extends AppCompatActivity {
     @Override

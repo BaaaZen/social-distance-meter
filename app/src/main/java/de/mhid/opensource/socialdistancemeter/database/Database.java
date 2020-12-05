@@ -27,15 +27,16 @@ public class Database {
     T run();
   }
 
-  private static Database instance = null;
+//  private static Database instance = null;
   public static Database getInstance(Context ctx) {
-    if(instance == null) instance = new Database(ctx);
-    return instance;
+//    if(instance == null) instance = new Database(ctx);
+//    return instance;
+    return new Database(ctx);
   }
 
 
 //  private CwaDatabase cwaDatabase;
-  private Context ctx;
+  private final Context ctx;
   private Database(Context ctx) {
     this.ctx = ctx;
 //    cwaDatabase = Room.databaseBuilder(ctx, CwaDatabase.class, "cwa-token.db").build();
@@ -48,7 +49,7 @@ public class Database {
 
   public void runAsync(Runnable runnable) {
     Runnable r = () -> {
-      synchronized (instance) {
+      synchronized (Database.this) {
         runnable.run();
       }
     };
@@ -57,7 +58,7 @@ public class Database {
   }
 
   public <T> T runSync(RunnableWithReturn<T> runnable) {
-    synchronized (instance) {
+    synchronized (Database.this) {
       return runnable.run();
     }
   }

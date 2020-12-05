@@ -20,6 +20,8 @@ package de.mhid.opensource.socialdistancemeter.utils;
 import android.content.Context;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -30,15 +32,19 @@ import de.mhid.opensource.socialdistancemeter.R;
 import io.noties.markwon.Markwon;
 
 public class Markdown {
-    private static String loadMarkdownFileFromAssets(Context ctx, String filename) throws IOException {
+    private static String loadMarkdownFileFromAssets(@NonNull Context ctx, @NonNull String filename) throws IOException {
         InputStream is = ctx.getAssets().open(getMarkdownFile(filename));
         byte[] content = new byte[is.available()];
-        is.read(content);
+        int byteCount = is.read(content);
         is.close();
+
+        // end of file
+        if(byteCount == -1) return null;
 
         return new String(content, StandardCharsets.UTF_8);
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private static boolean existsMarkdownFileFromAssets(Context ctx, String filename) {
         try {
             return Arrays.asList(ctx.getAssets().list("")).contains(getMarkdownFile(filename));
@@ -73,8 +79,12 @@ public class Markdown {
             // load file
             String markdownContent = loadMarkdownFileFromAssets(ctx, filename);
 
-            // parse markdown
-            Markwon.create(ctx).setMarkdown(textView, markdownContent);
+            if(markdownContent != null) {
+                // parse markdown
+                Markwon.create(ctx).setMarkdown(textView, markdownContent);
+            } else {
+                textView.setText(ctx.getString(R.string.markdown_error, filename, "end of file"));
+            }
         } catch (IOException e) {
             // markdown file missing -> show error
             textView.setText(ctx.getString(R.string.markdown_error, filename, e.getMessage()));
