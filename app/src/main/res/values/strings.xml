@@ -21,7 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <string name="notification_title">Social Distance Meter</string>
     <string name="app_subtitle">An app to analyze and rate your social distancing behavior</string>
 
-    <string name="placeholder" translatable="false">PLACEHOLDER</string>
+    <string name="placeholder">PLACEHOLDER</string>
     <string name="unknown_error">Unknown Error</string>
     <string name="markdown_error">Error loading markdown from %1$s:\n%2$s</string>
 
