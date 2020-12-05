@@ -23,7 +23,9 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.NotificationCompat;
 import androidx.preference.PreferenceManager;
+import androidx.work.ForegroundInfo;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
@@ -45,6 +47,7 @@ import de.mhid.opensource.socialdistancemeter.database.CwaTokenMinRollingTimesta
 import de.mhid.opensource.socialdistancemeter.database.Database;
 import de.mhid.opensource.socialdistancemeter.diagkeys.countries.Country;
 import de.mhid.opensource.socialdistancemeter.diagkeys.parser.TemporaryExposureKeyExportParser;
+import de.mhid.opensource.socialdistancemeter.notification.NotificationChannelHelper;
 import de.mhid.opensource.socialdistancemeter.services.DiagKeySyncService;
 import de.mhid.opensource.socialdistancemeter.utils.HexString;
 
@@ -131,6 +134,21 @@ public class DiagKeySyncWorker extends Worker {
     }
 
     @NonNull
+    private ForegroundInfo createForegroundInfo(@NonNull String progress) {
+        Context ctx = getApplicationContext();
+
+        // build notification
+        NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(ctx, NotificationChannelHelper.getChannelId(ctx))
+                        .setContentTitle(ctx.getString(R.string.notification_sync_title))
+                        .setContentText(progress)
+                        .setSmallIcon(R.drawable.round_sync_24)
+                        .setOngoing(true);
+
+        return new ForegroundInfo(2, builder.build());
+    }
+
+    @NonNull
     @Override
     public Result doWork() {
         boolean isSettingsSyncEnabled = sharedPreferences.getBoolean(getApplicationContext().getString(R.string.settings_key_risk_sync_enabled), true);
@@ -139,6 +157,8 @@ public class DiagKeySyncWorker extends Worker {
             // if sync is disabled in settings -> skip background work
             return Result.success();
         }
+
+        setForegroundAsync(createForegroundInfo(getApplicationContext().getString(R.string.card_risks_sync_status_starting)));
 
         Log.i(getClass().getSimpleName(), "Starting to work ... :-)");
         String error = getApplicationContext().getString(R.string.card_risks_sync_status_error_unknown);
@@ -151,7 +171,7 @@ public class DiagKeySyncWorker extends Worker {
         }
 
         try {
-            sendIntentSyncStatusUpdate(getApplicationContext().getString(R.string.card_risks_sync_status_starting),0);
+            sendSyncStatusUpdate(getApplicationContext().getString(R.string.card_risks_sync_status_starting),0);
 
             List<Country> countries = new ArrayList<>(Arrays.asList(Country.countries));
 
@@ -219,6 +239,11 @@ public class DiagKeySyncWorker extends Worker {
         getApplicationContext().sendBroadcast(sndSyncStatusUpdate);
     }
 
+    private void sendSyncStatusUpdate(String description, int progress) {
+        setForegroundAsync(createForegroundInfo(description));
+        sendIntentSyncStatusUpdate(description, progress);
+    }
+
     private void sendIntentSyncStatusUpdate(String description, int progress) {
         Intent sndSyncStatusUpdate = new Intent();
         sndSyncStatusUpdate.setAction(CardRisks.INTENT_SYNC_STATUS_SYNC);
@@ -242,7 +267,7 @@ public class DiagKeySyncWorker extends Worker {
             // status update
             String countryName = getApplicationContext().getString(country.getCountryName());
             int progress = 10 + countryCounter * 40 / countries.size();
-            sendIntentSyncStatusUpdate(getApplicationContext().getString(R.string.card_risks_sync_status_download_country, countryName), progress);
+            sendSyncStatusUpdate(getApplicationContext().getString(R.string.card_risks_sync_status_download_country, countryName), progress);
             countryCounter++;
 
             // downloading keys
@@ -378,7 +403,7 @@ public class DiagKeySyncWorker extends Worker {
             if(diagKeyCounter % (diagKeyList.size()/100) == 0) {
                 int percent = diagKeyCounter * 100 / diagKeyList.size();
                 int progress = 50 + percent*50/100;
-                sendIntentSyncStatusUpdate(getApplicationContext().getString(R.string.card_risks_sync_status_comparing, percent), progress);
+                sendSyncStatusUpdate(getApplicationContext().getString(R.string.card_risks_sync_status_comparing, percent), progress);
             }
             diagKeyCounter++;
 

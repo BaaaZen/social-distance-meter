@@ -52,11 +52,10 @@ import de.mhid.opensource.socialdistancemeter.activity.MainActivity;
 import de.mhid.opensource.socialdistancemeter.ble.BleScanner;
 import de.mhid.opensource.socialdistancemeter.database.CwaToken;
 import de.mhid.opensource.socialdistancemeter.database.Database;
+import de.mhid.opensource.socialdistancemeter.notification.NotificationChannelHelper;
 import de.mhid.opensource.socialdistancemeter.utils.HexString;
 
 public class BleScanService extends Service {
-  private static final String NOTIFICATION_CHANNEL_ID = "ble_scan_notification_channel";
-
   public static final String INTENT_START_MAIN_ACTIVITY = "request_user_count";
 
   private static HashMap<String, CwaScanResult> staticScanResults = null;
@@ -372,24 +371,13 @@ public class BleScanService extends Service {
     Intent notificationIntent = new Intent(this, MainActivity.class);
     PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
-    NotificationManager manager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
-    NotificationCompat.Builder builder;
-
-    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "CWA Details", NotificationManager.IMPORTANCE_MIN);
-      notificationChannel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-      manager.createNotificationChannel(notificationChannel);
-
-      builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
-    } else {
-      builder = new NotificationCompat.Builder(this);
-    }
-
-    builder
-            .setContentIntent(pendingIntent)
-            .setContentTitle(getText(R.string.notification_title))
-            .setContentText(notificationText)
-            .setSmallIcon(iconRes);
+    // build notification
+    NotificationCompat.Builder builder =
+            new NotificationCompat.Builder(this, NotificationChannelHelper.getChannelId(this))
+              .setContentIntent(pendingIntent)
+              .setContentTitle(getText(R.string.notification_title))
+              .setContentText(notificationText)
+              .setSmallIcon(iconRes);
 
     startForeground(1, builder.build());
   }

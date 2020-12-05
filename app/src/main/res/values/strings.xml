@@ -114,4 +114,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <string name="card_risks_encounters_details_count"># of encounters: %1$s</string>
     <string name="card_risks_encounters_details_recent">Recent encounter: %1$s</string>
     <string name="card_risks_encounters_details_command">Show encounter details</string>
+
+    <!-- NOTIFICATION: syncing diag keys -->
+    <string name="notification_sync_title">Synchronizing diagnosis keys ...</string>
 </resources>

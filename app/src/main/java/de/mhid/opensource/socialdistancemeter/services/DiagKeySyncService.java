@@ -94,10 +94,11 @@ public class DiagKeySyncService extends Service {
         data.putBoolean(DiagKeySyncWorker.WORK_PARAMETER_BACKGROUND, true);
 
         Constraints.Builder constraintBuilder = new Constraints.Builder()
-                .setRequiresBatteryNotLow(true);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            constraintBuilder.setRequiresDeviceIdle(true);
-        }
+                .setRequiresBatteryNotLow(true)
+                .setRequiresStorageNotLow(true);
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//            constraintBuilder.setRequiresDeviceIdle(true);
+//        }
         Constraints constraints = constraintBuilder.build();
 
         PeriodicWorkRequest workRequest =
