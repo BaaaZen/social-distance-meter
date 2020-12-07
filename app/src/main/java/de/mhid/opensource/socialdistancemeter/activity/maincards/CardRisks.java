@@ -28,6 +28,7 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -75,10 +76,12 @@ public class CardRisks {
     private void init() {
         registerClickListeners();
         registerIntentReceivers();
+        registerSharedPreferenceChangeListener();
 
         triggerUpdates();
 
         updateEncounters(false);
+        setSyncButtonVisibility();
     }
 
     private void triggerUpdates() {
@@ -162,12 +165,33 @@ public class CardRisks {
     }
 
     private void registerClickListeners() {
-        ConstraintLayout blockStartSync = mainActivity.findViewById(R.id.card_risks_start_sync);
+        ConstraintLayout blockStartSync = mainActivity.findViewById(R.id.card_risks_start_sync_inner);
         blockStartSync.setOnClickListener(v -> {
             Intent diagKeyUpdateIntent = new Intent(mainActivity, DiagKeySyncService.class);
             diagKeyUpdateIntent.setAction(DiagKeySyncService.INTENT_START_DIAG_KEY_UPDATE);
             mainActivity.startService(diagKeyUpdateIntent);
         });
+    }
+
+    private void registerSharedPreferenceChangeListener() {
+        new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                if(key.equals(mainActivity.getString(R.string.settings_key_risk_sync_enabled))) {
+                    setSyncButtonVisibility();
+                }
+            }
+        };
+    }
+
+    private void setSyncButtonVisibility() {
+        boolean syncEnabled = sharedPreferences.getBoolean(mainActivity.getString(R.string.settings_key_risk_sync_enabled), true);
+        setSyncButtonVisibility(syncEnabled);
+    }
+
+    private void setSyncButtonVisibility(boolean visible) {
+        LinearLayout startSyncBlock = mainActivity.findViewById(R.id.card_risks_start_sync);
+        startSyncBlock.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
     private void setLastUpdateDetails(String s) {
@@ -195,16 +219,12 @@ public class CardRisks {
         ImageView syncAnimation = mainActivity.findViewById(R.id.card_risks_sync_icon);
         syncAnimation.clearAnimation();
 
-        ConstraintLayout syncButton = mainActivity.findViewById(R.id.card_risks_start_sync);
-        if(sharedPreferences.getBoolean(mainActivity.getString(R.string.settings_key_risk_sync_enabled), true)) {
-            syncButton.setVisibility(View.GONE);
-        } else {
-            syncButton.setVisibility(View.VISIBLE);
-        }
+        ConstraintLayout syncButton = mainActivity.findViewById(R.id.card_risks_start_sync_inner);
+        syncButton.setVisibility(View.VISIBLE);
     }
 
     private void setSyncRunning(String description, int progress) {
-        ConstraintLayout syncButton = mainActivity.findViewById(R.id.card_risks_start_sync);
+        ConstraintLayout syncButton = mainActivity.findViewById(R.id.card_risks_start_sync_inner);
         syncButton.setVisibility(View.GONE);
 
         ImageView syncAnimation = mainActivity.findViewById(R.id.card_risks_sync_icon);
@@ -217,6 +237,7 @@ public class CardRisks {
         syncDescription.setText(description);
 
         ProgressBar syncProgress = mainActivity.findViewById(R.id.card_risks_sync_progress);
+        syncProgress.setVisibility(View.VISIBLE);
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             syncProgress.setProgress(progress, progress > 0);
         } else {
@@ -231,6 +252,9 @@ public class CardRisks {
         ConstraintLayout syncStatusBlock = mainActivity.findViewById(R.id.card_risks_sync);
         syncStatusBlock.setVisibility(View.VISIBLE);
 
+        ProgressBar syncProgress = mainActivity.findViewById(R.id.card_risks_sync_progress);
+        syncProgress.setVisibility(View.GONE);
+
         TextView syncDescription = mainActivity.findViewById(R.id.card_risks_sync_details);
         syncDescription.setText(error);
 
@@ -238,12 +262,8 @@ public class CardRisks {
         syncAnimation.setImageDrawable(ContextCompat.getDrawable(mainActivity, R.drawable.round_sync_problem_24));
         syncAnimation.clearAnimation();
 
-        ConstraintLayout syncButton = mainActivity.findViewById(R.id.card_risks_start_sync);
-        if(sharedPreferences.getBoolean(mainActivity.getString(R.string.settings_key_risk_sync_enabled), true)) {
-            syncButton.setVisibility(View.GONE);
-        } else {
-            syncButton.setVisibility(View.VISIBLE);
-        }
+        ConstraintLayout syncButton = mainActivity.findViewById(R.id.card_risks_start_sync_inner);
+        syncButton.setVisibility(View.VISIBLE);
     }
 
     private void updateEncounters(boolean force) {
