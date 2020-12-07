@@ -63,6 +63,7 @@ public class CardRisks {
 
     private final MainActivity mainActivity;
     private final SharedPreferences sharedPreferences;
+    private SharedPreferences.OnSharedPreferenceChangeListener sharedPreferenceChangeListener = null;
 
     private List<CwaTokenRisk> riskList = null;
 
@@ -71,6 +72,10 @@ public class CardRisks {
         this.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mainActivity);
 
         init();
+    }
+
+    public void uninit() {
+        unregisterSharedPreferenceChangeListener();
     }
 
     private void init() {
@@ -174,19 +179,29 @@ public class CardRisks {
     }
 
     private void registerSharedPreferenceChangeListener() {
-        new SharedPreferences.OnSharedPreferenceChangeListener() {
-            @Override
-            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-                if(key.equals(mainActivity.getString(R.string.settings_key_risk_sync_enabled))) {
-                    setSyncButtonVisibility();
-                }
-            }
-        };
+        sharedPreferenceChangeListener =
+                new SharedPreferences.OnSharedPreferenceChangeListener() {
+                    @Override
+                    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                        if(key.equals(mainActivity.getString(R.string.settings_key_risk_sync_enabled))) {
+                            setSyncButtonVisibility();
+                        }
+                    }
+                };
+
+        sharedPreferences.registerOnSharedPreferenceChangeListener(sharedPreferenceChangeListener);
+    }
+
+    private void unregisterSharedPreferenceChangeListener() {
+        if(sharedPreferenceChangeListener != null) {
+            sharedPreferences.unregisterOnSharedPreferenceChangeListener(sharedPreferenceChangeListener);
+            sharedPreferenceChangeListener = null;
+        }
     }
 
     private void setSyncButtonVisibility() {
         boolean syncEnabled = sharedPreferences.getBoolean(mainActivity.getString(R.string.settings_key_risk_sync_enabled), true);
-        setSyncButtonVisibility(syncEnabled);
+        setSyncButtonVisibility(!syncEnabled);
     }
 
     private void setSyncButtonVisibility(boolean visible) {

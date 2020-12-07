@@ -57,6 +57,8 @@ public class MainActivity extends AppCompatActivity {
   public static final int COUNT_ERROR_SCANNING_IN_PROGRESS = -1;
   public static final int COUNT_ERROR_UNABLE_TO_SCAN = -2;
 
+  private CardRisks cardRisks = null;
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -67,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
     CollapsingToolbarLayout toolBarLayout = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
     toolBarLayout.setTitle(getTitle());
 
-    new CardRisks(this);
+    cardRisks = new CardRisks(this);
 
     // click handler for permission card
     CardView cardPermissions = (CardView)findViewById(R.id.card_permissions);
@@ -112,6 +114,13 @@ public class MainActivity extends AppCompatActivity {
     // start diag key updates
     Intent diagKeyUpdateServiceIntent = new Intent(this, DiagKeySyncService.class);
     startService(diagKeyUpdateServiceIntent);
+  }
+
+  @Override
+  protected void onDestroy() {
+    super.onDestroy();
+
+    if(cardRisks != null) cardRisks.uninit();
   }
 
   @Override
