@@ -20,7 +20,6 @@ package de.mhid.opensource.socialdistancemeter.services;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.IBinder;
 
 import androidx.annotation.Nullable;
@@ -109,7 +108,7 @@ public class DiagKeySyncService extends Service {
                         .build();
 
         WorkManager.getInstance(this)
-                .enqueueUniquePeriodicWork(PERIODIC_WORK_NAME, ExistingPeriodicWorkPolicy.KEEP, workRequest);
+                .enqueueUniquePeriodicWork(PERIODIC_WORK_NAME, ExistingPeriodicWorkPolicy.REPLACE, workRequest);
     }
 
     private void startOneTimeWork() {

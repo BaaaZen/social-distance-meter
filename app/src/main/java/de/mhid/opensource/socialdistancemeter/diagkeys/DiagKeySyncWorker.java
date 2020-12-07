@@ -135,16 +135,17 @@ public class DiagKeySyncWorker extends Worker {
     }
 
     @NonNull
-    private ForegroundInfo createForegroundInfo(@NonNull String progress) {
+    private ForegroundInfo createForegroundInfo(@NonNull String description, int progress) {
         Context ctx = getApplicationContext();
 
         // build notification
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(ctx, NotificationChannelHelper.getChannelId(ctx))
                         .setContentTitle(ctx.getString(R.string.notification_sync_title))
-                        .setContentText(progress)
+                        .setContentText(description)
                         .setSmallIcon(R.drawable.round_sync_24)
-                        .setOngoing(true);
+                        .setOngoing(true)
+                        .setProgress(100, progress, progress == 0);
 
         return new ForegroundInfo(2, builder.build());
     }
@@ -159,7 +160,7 @@ public class DiagKeySyncWorker extends Worker {
             return Result.success();
         }
 
-        setForegroundAsync(createForegroundInfo(getApplicationContext().getString(R.string.card_risks_sync_status_starting)));
+        setForegroundAsync(createForegroundInfo(getApplicationContext().getString(R.string.card_risks_sync_status_starting), 0));
 
         Log.i(getClass().getSimpleName(), "Starting to work ... :-)");
         String error = getApplicationContext().getString(R.string.card_risks_sync_status_error_unknown);
@@ -168,7 +169,7 @@ public class DiagKeySyncWorker extends Worker {
         if(!lockSuccess) {
             // another worker is already running -> abort current work
             Log.i(getClass().getSimpleName(), "Another worker is already in progress, so aborting work for now!");
-            return Result.failure();
+            return Result.success();
         }
 
         try {
@@ -212,7 +213,7 @@ public class DiagKeySyncWorker extends Worker {
                 // show sync error
                 sendIntentSyncStatusUpdateError(error);
 
-                return Result.failure();
+                return Result.success();
             }
         } finally {
             unlockConcurrency();
@@ -241,7 +242,7 @@ public class DiagKeySyncWorker extends Worker {
     }
 
     private void sendSyncStatusUpdate(String description, int progress) {
-        setForegroundAsync(createForegroundInfo(description));
+        setForegroundAsync(createForegroundInfo(description, progress));
         sendIntentSyncStatusUpdate(description, progress);
     }
 
