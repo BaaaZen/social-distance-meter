@@ -2,6 +2,8 @@
 
 ## 0.0.4 (Alpha)
 * Prune collected tokens from database once a day
+* UI improvements
+* Another fix for faulty automatic synchronisation
 
 ## 0.0.3 (Alpha)
 * Location recording
