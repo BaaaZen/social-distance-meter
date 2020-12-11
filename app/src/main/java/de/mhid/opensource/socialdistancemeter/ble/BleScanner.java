@@ -56,7 +56,6 @@ public class BleScanner extends Thread {
   private boolean running = false;
   private boolean shutdown = false;
   private long scanPeriod = 50000;
-  private long lastScanTime = 0;
   private long nextSleepTime = 100;
 
   @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -107,7 +106,7 @@ public class BleScanner extends Thread {
 
   @Override
   public void run() {
-    lastScanTime = System.currentTimeMillis();
+    long lastScanTime = System.currentTimeMillis();
 
     while(true) {
       synchronized (this) {
@@ -119,6 +118,7 @@ public class BleScanner extends Thread {
       long current = System.currentTimeMillis();
       if(current < lastScanTime + getNextSleepTime()) {
         try {
+          //noinspection BusyWait
           sleep((lastScanTime + getNextSleepTime()) - current);
         } catch (InterruptedException ignored) {
           continue;
@@ -235,6 +235,7 @@ public class BleScanner extends Thread {
         }
 
         try {
+          //noinspection BusyWait
           sleep(scanUntil - current);
         } catch (InterruptedException ignored) {
         }
