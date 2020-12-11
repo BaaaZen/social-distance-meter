@@ -265,6 +265,7 @@ public class BleScanService extends Service {
     if (scanResults == null) return;
     if (!scanResults.containsKey(mac)) scanResults.put(mac, new CwaScanResult(data));
     CwaScanResult device = scanResults.get(mac);
+    assert device != null;
     device.addRssi(rssi);
   }
 
@@ -290,6 +291,7 @@ public class BleScanService extends Service {
     db.runAsync(() -> {
       for (String mac : scanResults.keySet()) {
         CwaScanResult scanResult = scanResults.get(mac);
+        assert scanResult != null;
 
         // generate database object
         CwaToken dbCwaToken = new CwaToken();
