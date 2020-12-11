@@ -20,19 +20,27 @@ package de.mhid.opensource.socialdistancemeter.services;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.util.Log;
 
 public class Autostart extends BroadcastReceiver {
   @Override
   public void onReceive(Context context, Intent intent) {
-    // start ble scanner
-    Intent bleServiceIntent = new Intent(context, BleScanService.class);
-    context.startService(bleServiceIntent);
+    if(intent.getAction().equalsIgnoreCase(Intent.ACTION_BOOT_COMPLETED)) {
+      // start ble scanner
+      Intent bleServiceIntent = new Intent(context, BleScanService.class);
+      bleServiceIntent.setAction(BleScanService.INTENT_REQUEST_USER_COUNT);
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        context.startForegroundService(bleServiceIntent);
+      } else {
+        context.startService(bleServiceIntent);
+      }
 
-    // start diag key updates
-    Intent diagKeyUpdateServiceIntent = new Intent(context, DiagKeySyncService.class);
-    context.startService(diagKeyUpdateServiceIntent);
+      // start diag key updates
+      Intent diagKeyUpdateServiceIntent = new Intent(context, DiagKeySyncService.class);
+      context.startService(diagKeyUpdateServiceIntent);
 
-    Log.i(getClass().getSimpleName(), "Autostart started");
+      Log.i(getClass().getSimpleName(), "Autostart started");
+    }
   }
 }

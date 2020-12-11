@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
 
     // start scanner service and request recent user count
     Intent bleServiceIntent = new Intent(this, BleScanService.class);
-    bleServiceIntent.setAction(BleScanService.INTENT_START_MAIN_ACTIVITY);
+    bleServiceIntent.setAction(BleScanService.INTENT_REQUEST_USER_COUNT);
     startService(bleServiceIntent);
 
     // start diag key updates
@@ -175,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
   private void requestUserCount() {
     // start scanner service and request recent user count
     Intent bleServiceIntent = new Intent(this, BleScanService.class);
-    bleServiceIntent.setAction(BleScanService.INTENT_START_MAIN_ACTIVITY);
+    bleServiceIntent.setAction(BleScanService.INTENT_REQUEST_USER_COUNT);
     startService(bleServiceIntent);
   }
 

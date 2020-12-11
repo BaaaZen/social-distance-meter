@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.0.5 (Alpha)
+* Fixed Autostart
+
 ## 0.0.4 (Alpha)
 * Prune collected tokens from database once a day
 * UI improvements

@@ -56,7 +56,7 @@ import de.mhid.opensource.socialdistancemeter.services.work.PurgeTokenFromDataba
 import de.mhid.opensource.socialdistancemeter.utils.HexString;
 
 public class BleScanService extends Service {
-  public final static String INTENT_START_MAIN_ACTIVITY = "request_user_count";
+  public final static String INTENT_REQUEST_USER_COUNT = "request_user_count";
 
   private final static String PERIODIC_PRUNE_WORK_NAME = "periodic_prune_token_from_database_work";
 
@@ -87,7 +87,7 @@ public class BleScanService extends Service {
     }
 
     // get current user count
-    if (intent.getAction() != null && intent.getAction().equals(INTENT_START_MAIN_ACTIVITY)) {
+    if (intent.getAction() != null && intent.getAction().equals(INTENT_REQUEST_USER_COUNT)) {
       if (hasLocationPermission) {
         // send update user count
         // -> do we have a current user count?
