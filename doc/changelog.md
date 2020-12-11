@@ -2,6 +2,7 @@
 
 ## 0.0.5 (Alpha)
 * Fixed Autostart
+* Moved BLE scanner to a thread instead of using Handler in UI Thread
 
 ## 0.0.4 (Alpha)
 * Prune collected tokens from database once a day

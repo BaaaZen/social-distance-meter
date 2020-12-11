@@ -26,8 +26,6 @@ import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.ParcelUuid;
 import android.util.Log;
 
@@ -40,7 +38,7 @@ import java.util.UUID;
 
 import de.mhid.opensource.socialdistancemeter.services.BleScanService;
 
-public class BleScanner {
+public class BleScanner extends Thread {
   private static final long SCAN_DURATION = 10000;
   private static final long SCAN_PERIOD_ERROR_RETRY = 10000;
 
@@ -53,31 +51,11 @@ public class BleScanner {
   private BluetoothAdapter bluetoothAdapter = null;
   private BluetoothLeScanner bluetoothLeScanner = null;
 
-  private BleScanService service;
+  private final BleScanService service;
 
-  private final Handler handler = new Handler(Looper.myLooper());
-  private boolean scanning = false;
   private boolean running = false;
+  private boolean shutdown = false;
   private long scanPeriod = 50000;
-
-  private final Runnable runScheduledScan = () -> {
-    Log.i("scheduleScan", "running now!");
-    // check if app has location permission
-    boolean hasLocationPermission = ActivityCompat.checkSelfPermission(service, Manifest.permission.ACCESS_FINE_LOCATION) ==
-            PackageManager.PERMISSION_GRANTED;
-    if(!hasLocationPermission) {
-      // -> show error
-      service.scanPermissionError();
-      scheduleScan(SCAN_PERIOD_ERROR_RETRY);
-      return;
-    }
-
-    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-      this.scan_Lollipop();
-    } else {
-      this.scan_Older();
-    }
-  };
 
   @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
   class BleScanCallback extends ScanCallback {
@@ -98,57 +76,95 @@ public class BleScanner {
 
     // schedule scan
     running = true;
-    scheduleScan(100);
+    shutdown = false;
+
+    super.start();
   }
 
-  public synchronized void shutdown() {
-    if(!running) return;
+  public void shutdown() {
+    synchronized (this) {
+      if (!running) return;
+      if (shutdown) return;
 
-    // seems like we are waiting for scheduled scan -> abort schedule
-    running = false;
-    handler.removeCallbacks(runScheduledScan);
-  }
+      shutdown = true;
+      interrupt();
+    }
 
-  private synchronized boolean startScanning() {
-    if(scanning) return false;
-    scanning = true;
-    return true;
-  }
+    while(true) {
+      try {
+        join();
+        break;
+      } catch (InterruptedException ignored) {
+      }
+    }
 
-  private synchronized boolean stopScanning() {
-    if(!scanning) return false;
-    scanning = false;
-    return true;
-  }
-
-  private synchronized void scheduleScan(long waitDuration) {
-    if(!running) return;
-
-    Log.i("scheduleScan", "scheduling after " + waitDuration/1000 + "s");
-    boolean ok = handler.postDelayed(runScheduledScan, waitDuration);
-    if(!ok) {
-      Log.e(getClass().getSimpleName(), "Error scheduling scan!");
+    synchronized (this) {
       running = false;
     }
   }
 
+  @Override
+  public void run() {
+    long sleepUntil = System.currentTimeMillis() + 100;
+    while(true) {
+      synchronized (this) {
+        // thread aborted?
+        if(!running || shutdown) break;
+      }
+
+      // wait for next scan period
+      long current = System.currentTimeMillis();
+      if(current < sleepUntil) {
+        try {
+          sleep(sleepUntil - current);
+        } catch (InterruptedException ignored) {
+          continue;
+        }
+      }
+
+      // check if app has location permission
+      boolean hasLocationPermission = ActivityCompat.checkSelfPermission(service, Manifest.permission.ACCESS_FINE_LOCATION) ==
+              PackageManager.PERMISSION_GRANTED;
+      if(!hasLocationPermission) {
+        // -> show error
+        service.scanPermissionError();
+        Log.i("scheduleScan", "missing permission");
+        sleepUntil = current + SCAN_PERIOD_ERROR_RETRY;
+        continue;
+      }
+
+      Log.i("scheduleScan", "running now!");
+
+      long sleepTime;
+      if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        sleepTime = this.scan_Lollipop();
+      } else {
+        sleepTime = this.scan_Older();
+      }
+      sleepUntil = System.currentTimeMillis() + sleepTime;
+
+      Log.i("scheduleScan", "scanning done!");
+    }
+  }
+
+
   public synchronized void setPeriod(long p) {
     scanPeriod = p - SCAN_DURATION;
+
+    interrupt();
   }
 
   private synchronized long getPeriodWaitTime() {
     return scanPeriod;
   }
 
-  private void scan_Older() {
-    // TODO
+  private long scan_Older() {
+    // TODO implement
+    return SCAN_PERIOD_ERROR_RETRY;
   }
 
   @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-  private void scan_Lollipop() {
-    boolean ok1 = startScanning();
-    if(!ok1) return;
-
+  private long scan_Lollipop() {
     // get bluetooth adapter
     if(bluetoothAdapter == null) {
       bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -158,8 +174,7 @@ public class BleScanner {
     if(bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
       // -> show error
       service.scanBluetoothError();
-      scheduleScan(SCAN_PERIOD_ERROR_RETRY);
-      return;
+      return SCAN_PERIOD_ERROR_RETRY;
     }
 
     // init bluetooth le scanner
@@ -195,28 +210,25 @@ public class BleScanner {
     service.scanBegin();
     bluetoothLeScanner.startScan(scanFilter, scanSettings, bleScanCallback);
 
-    final Runnable afterScan = () -> {
+    long scanUntil = System.currentTimeMillis() + SCAN_DURATION;
+    while (true) {
+      long current = System.currentTimeMillis();
+      if(current >= scanUntil) break;
+
       try {
-        bluetoothLeScanner.flushPendingScanResults(bleScanCallback);
-        bluetoothLeScanner.stopScan(bleScanCallback);
-      } finally {
-        boolean ok3 = stopScanning();
-
-        if(ok3) {
-          service.scanFinished();
-
-          // re-schedule scan
-          scheduleScan(getPeriodWaitTime());
-        }
+        sleep(SCAN_DURATION);
+      } catch (InterruptedException ignored) {
       }
-    };
-
-    // stop scan after x seconds
-    boolean ok2 = handler.postDelayed(afterScan, SCAN_DURATION);
-    if(!ok2) {
-      Log.e(getClass().getSimpleName(), "Error scheduling scan stop.");
-      afterScan.run();
     }
+
+    // stop scan
+    bluetoothLeScanner.flushPendingScanResults(bleScanCallback);
+    bluetoothLeScanner.stopScan(bleScanCallback);
+
+    service.scanFinished();
+
+    // re-schedule scan
+    return getPeriodWaitTime();
   }
 
 }
