@@ -56,6 +56,8 @@ public class BleScanner extends Thread {
   private boolean running = false;
   private boolean shutdown = false;
   private long scanPeriod = 50000;
+  private long lastScanTime = 0;
+  private long nextSleepTime = 100;
 
   @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
   class BleScanCallback extends ScanCallback {
@@ -105,7 +107,8 @@ public class BleScanner extends Thread {
 
   @Override
   public void run() {
-    long sleepUntil = System.currentTimeMillis() + 100;
+    lastScanTime = System.currentTimeMillis();
+
     while(true) {
       synchronized (this) {
         // thread aborted?
@@ -114,13 +117,15 @@ public class BleScanner extends Thread {
 
       // wait for next scan period
       long current = System.currentTimeMillis();
-      if(current < sleepUntil) {
+      if(current < lastScanTime + getNextSleepTime()) {
         try {
-          sleep(sleepUntil - current);
+          sleep((lastScanTime + getNextSleepTime()) - current);
         } catch (InterruptedException ignored) {
           continue;
         }
       }
+
+      lastScanTime = System.currentTimeMillis();
 
       // check if app has location permission
       boolean hasLocationPermission = ActivityCompat.checkSelfPermission(service, Manifest.permission.ACCESS_FINE_LOCATION) ==
@@ -129,7 +134,7 @@ public class BleScanner extends Thread {
         // -> show error
         service.scanPermissionError();
         Log.i("scheduleScan", "missing permission");
-        sleepUntil = current + SCAN_PERIOD_ERROR_RETRY;
+        setNextSleepTime(SCAN_PERIOD_ERROR_RETRY, true);
         continue;
       }
 
@@ -141,7 +146,7 @@ public class BleScanner extends Thread {
       } else {
         sleepTime = this.scan_Older();
       }
-      sleepUntil = System.currentTimeMillis() + sleepTime;
+      setNextSleepTime(sleepTime, true);
 
       Log.i("scheduleScan", "scanning done!");
     }
@@ -149,13 +154,23 @@ public class BleScanner extends Thread {
 
 
   public synchronized void setPeriod(long p) {
-    scanPeriod = p - SCAN_DURATION;
-
+    scanPeriod = p;
+    setNextSleepTime(scanPeriod, false);
     interrupt();
   }
 
   private synchronized long getPeriodWaitTime() {
     return scanPeriod;
+  }
+
+  private synchronized void setNextSleepTime(long nextSleepTime, boolean force) {
+    if(force || nextSleepTime < this.nextSleepTime) {
+      this.nextSleepTime =  nextSleepTime;
+    }
+  }
+
+  private synchronized long getNextSleepTime() {
+    return nextSleepTime;
   }
 
   private long scan_Older() {
@@ -208,25 +223,29 @@ public class BleScanner extends Thread {
 
     // start scan
     service.scanBegin();
-    bluetoothLeScanner.startScan(scanFilter, scanSettings, bleScanCallback);
+    try {
+      bluetoothLeScanner.startScan(scanFilter, scanSettings, bleScanCallback);
 
-    long scanUntil = System.currentTimeMillis() + SCAN_DURATION;
-    while (true) {
-      long current = System.currentTimeMillis();
-      if(current >= scanUntil) break;
+      long scanUntil = System.currentTimeMillis() + SCAN_DURATION;
+      while (true) {
+        long current = System.currentTimeMillis();
+        if (current >= scanUntil) break;
+        synchronized (this) {
+          if (shutdown) break;
+        }
 
-      try {
-        sleep(SCAN_DURATION);
-      } catch (InterruptedException ignored) {
+        try {
+          sleep(scanUntil - current);
+        } catch (InterruptedException ignored) {
+        }
       }
+
+      // stop scan
+      bluetoothLeScanner.flushPendingScanResults(bleScanCallback);
+      bluetoothLeScanner.stopScan(bleScanCallback);
+    } finally {
+      service.scanFinished();
     }
-
-    // stop scan
-    bluetoothLeScanner.flushPendingScanResults(bleScanCallback);
-    bluetoothLeScanner.stopScan(bleScanCallback);
-
-    service.scanFinished();
-
     // re-schedule scan
     return getPeriodWaitTime();
   }
