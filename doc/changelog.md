@@ -2,6 +2,7 @@
 
 ## 0.0.5 (Alpha)
 * Fixed Autostart
+* Hourly downloading of diagnosis keys (if available)
 
 ## 0.0.4 (Alpha)
 * Prune collected tokens from database once a day

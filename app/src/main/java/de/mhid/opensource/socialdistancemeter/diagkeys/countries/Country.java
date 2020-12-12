@@ -25,9 +25,11 @@ import org.json.JSONException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -45,16 +47,42 @@ public abstract class Country {
     protected abstract String getCountryBaseUrl();
     public abstract String getCountryCode();
     public abstract int getCountryName();
+    public abstract boolean offersHourlyKeys();
 
     private String getDateUrl() {
         return getCountryBaseUrl() + "/date";
     }
-
     private String getDateUrl(String date) {
         return getCountryBaseUrl() + "/date/" + date;
     }
+    private String getDateHourUrl(String date) { return getCountryBaseUrl() + "/date/" + date + "/hour"; }
+    private String getDateHourUrl(String date, Integer hour) { return getCountryBaseUrl() + "/date/" + date + "/hour/" + hour.toString(); }
 
-    public String[] getAvailableDates() {
+    public List<Integer> getAvailableHours(String date) {
+        try {
+            Object jsonObject = Downloader.requestJson(getDateHourUrl(date));
+            if(!(jsonObject instanceof JSONArray)) {
+                Log.e(getClass().getSimpleName(), "Download error: Expected JSONArray for list of dates");
+                return null;
+            }
+
+            ArrayList<Integer> hours = new ArrayList<>();
+            JSONArray json = (JSONArray)jsonObject;
+            for(int i=0; i<json.length(); i++) {
+                hours.add(json.getInt(i));
+            }
+
+            return hours;
+        } catch (Downloader.DownloadException e) {
+            Log.e(getClass().getSimpleName(), "Download error", e);
+            return null;
+        } catch (JSONException e) {
+            Log.e(getClass().getSimpleName(), "Download error: Invalid JSON response", e);
+            return null;
+        }
+    }
+
+    public List<String> getAvailableDates() {
         try {
             Object jsonObject = Downloader.requestJson(getDateUrl());
             if(!(jsonObject instanceof JSONArray)) {
@@ -68,7 +96,7 @@ public abstract class Country {
                 dates.add(json.getString(i));
             }
 
-            return dates.toArray(new String[0]);
+            return dates;
         } catch (Downloader.DownloadException e) {
             Log.e(getClass().getSimpleName(), "Download error", e);
             return null;
@@ -78,18 +106,40 @@ public abstract class Country {
         }
     }
 
-    public TemporaryExposureKeyExportParser.TemporaryExposureKeyExport getParsedKeysForDate(String date) throws CountryDownloadException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    private void downloadKeysForDate(OutputStream os, String date) throws CountryDownloadException {
         try {
-            Downloader.requestDownload(getDateUrl(date), baos);
+            Downloader.requestDownload(getDateUrl(date), os);
         } catch (Downloader.DownloadException e) {
             // error downloading file
             throw new CountryDownloadException("Download error", e);
         }
+    }
 
+    private void downloadKeysForDateHour(OutputStream os, String date, Integer hour) throws CountryDownloadException {
+        try {
+            Downloader.requestDownload(getDateHourUrl(date, hour), os);
+        } catch (Downloader.DownloadException e) {
+            // error downloading file
+            throw new CountryDownloadException("Download error", e);
+        }
+    }
+
+    public TemporaryExposureKeyExportParser.TemporaryExposureKeyExport getParsedKeysForDate(String date) throws CountryDownloadException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        downloadKeysForDate(baos, date);
+        return parseKeysFromDownload(baos.toByteArray());
+    }
+
+    public TemporaryExposureKeyExportParser.TemporaryExposureKeyExport getParsedKeysForDateHour(String date, Integer hour) throws CountryDownloadException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        downloadKeysForDateHour(baos, date, hour);
+        return parseKeysFromDownload(baos.toByteArray());
+    }
+
+    private TemporaryExposureKeyExportParser.TemporaryExposureKeyExport parseKeysFromDownload(byte[] keysZipContent) throws CountryDownloadException {
         HashMap<String, ByteArrayOutputStream> fileContent = new HashMap<>();
         try {
-            ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(baos.toByteArray()));
+            ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(keysZipContent));
             ZipEntry zipEntry;
             while((zipEntry = zis.getNextEntry()) != null) {
                 if(fileContent.containsKey(zipEntry.getName()) ||
@@ -120,6 +170,7 @@ public abstract class Country {
         // TODO: check signature
 
         try {
+            //noinspection ConstantConditions
             ByteArrayInputStream bais = new ByteArrayInputStream(fileContent.get("export.bin").toByteArray());
 
             // check header

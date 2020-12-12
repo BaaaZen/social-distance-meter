@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 package de.mhid.opensource.socialdistancemeter.diagkeys;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -30,9 +31,11 @@ import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
@@ -207,14 +210,11 @@ public class DiagKeySyncWorker extends Worker {
 
                 // trigger update encounters
                 sendIntentEncountersUpdate();
-
-                return Result.success();
             } else {
                 // show sync error
                 sendIntentSyncStatusUpdateError(error);
-
-                return Result.success();
             }
+            return Result.success();
         } finally {
             unlockConcurrency();
         }
@@ -308,59 +308,116 @@ public class DiagKeySyncWorker extends Worker {
         }
 
         // now fetch all available days
-        String[] availableDates = country.getAvailableDates();
+        List<String> availableDates = country.getAvailableDates();
         if(availableDates == null) {
             // error fetching dates!
             return false;
         }
 
         // list all files in database
-        HashSet<String> dbAvailableFiles = new HashSet<>();
+        HashSet<String> dbCompleteDates = new HashSet<>();
+        HashMap<String, List<String>> dbAvailableFilesPerDate = new HashMap<>();
         List<CwaCountryFile> cwaCountryFiles = db.runSync(() -> db.cwaDatabase().cwaCountryFile().getAllForCountry(cwaCountryId));
         for(CwaCountryFile cwaCountryFile : cwaCountryFiles) {
-            dbAvailableFiles.add(cwaCountryFile.filename);
+            String filename = cwaCountryFile.filename;
+            if(filename.contains("/")) {
+                // date/hour key file
+                String date = filename.split("/", 1)[0];
+                if(!dbAvailableFilesPerDate.containsKey(date)) dbAvailableFilesPerDate.put(date, new ArrayList<>());
+                //noinspection ConstantConditions
+                dbAvailableFilesPerDate.get(date).add(filename);
+                //noinspection ConstantConditions
+                if(dbAvailableFilesPerDate.get(date).size() == 24) dbCompleteDates.add(date);
+            } else {
+                // only date key file
+                if(!dbAvailableFilesPerDate.containsKey(filename)) dbAvailableFilesPerDate.put(filename, new ArrayList<>());
+                //noinspection ConstantConditions
+                dbAvailableFilesPerDate.get(filename).add(filename);
+                dbCompleteDates.add(filename);
+            }
         }
 
         // fetch new days
         boolean success = true;
         for(String availableDate : availableDates) {
-            if(!dbAvailableFiles.contains(availableDate)) {
-                // import day
+            if(!dbAvailableFilesPerDate.containsKey(availableDate) || (!dbCompleteDates.contains(availableDate) && !country.offersHourlyKeys())) {
+                // no partial/hourly keys for this date -> download whole day
                 success &= downloadDailyKeysForCountryForDay(country, cwaCountryId, availableDate);
-            } else {
-                dbAvailableFiles.remove(availableDate);
+            } else if(!dbCompleteDates.contains(availableDate) && country.offersHourlyKeys()) {
+                // partial keys already in db -> check new hours
+                success &= downloadDailyKeysForCountryForDayByHours(country, cwaCountryId, availableDate, dbAvailableFilesPerDate.get(availableDate));
+            }
+            dbAvailableFilesPerDate.remove(availableDate);
+        }
+
+        // for hourly keys -> update "today"
+        if(country.offersHourlyKeys()) {
+            @SuppressLint("SimpleDateFormat") String today = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+            if(!availableDates.contains(today)) {
+                // already processed date?
+                success &= downloadDailyKeysForCountryForDayByHours(country, cwaCountryId, today, dbAvailableFilesPerDate.get(today));
+                dbAvailableFilesPerDate.remove(today);
             }
         }
 
         // delete old days
-        for(String removeFile : dbAvailableFiles) {
-            db.runSync((Database.RunnableWithReturn<Void>) () -> {
-                db.cwaDatabase().cwaCountryFile().deleteForCountry(cwaCountryId, removeFile);
-                return null;
-            });
+        for(String removeDate : dbAvailableFilesPerDate.keySet()) {
+            //noinspection ConstantConditions
+            for(String filename : dbAvailableFilesPerDate.get(removeDate)) {
+                db.runSync((Database.RunnableWithReturn<Void>) () -> {
+                    db.cwaDatabase().cwaCountryFile().deleteForCountry(cwaCountryId, filename);
+                    return null;
+                });
+            }
         }
 
         return success;
     }
 
     private boolean downloadDailyKeysForCountryForDay(Country country, long countryId, String day) {
-        Log.d(getClass().getSimpleName(), "parsing export.bin ...");
-        TemporaryExposureKeyExportParser.TemporaryExposureKeyExport tek;
         try {
-            tek = country.getParsedKeysForDate(day);
+            Log.d(getClass().getSimpleName(), "parsing export.bin ...");
+            TemporaryExposureKeyExportParser.TemporaryExposureKeyExport tek = country.getParsedKeysForDate(day);
+            Log.d(getClass().getSimpleName(), "parsing export.bin DONE");
+
+            importTekInDatabase(countryId, day, tek);
+
+            return true;
         } catch (Country.CountryDownloadException e) {
             Log.e(getClass().getSimpleName(), "Error downloading " + country.getCountryCode() + " -> " + day + ": " + e.getLocalizedMessage());
             return false;
         }
-        Log.d(getClass().getSimpleName(), "parsing export.bin DONE");
+    }
 
+    private boolean downloadDailyKeysForCountryForDayByHours(Country country, long countryId, String day, List<String> dbAvailableHours) {
+        List<Integer> hours = country.getAvailableHours(day);
+        for(Integer hour : hours) {
+            String filename = day + "/" + hour.toString();
+            // hourly file already downloaded?
+            if(dbAvailableHours != null && dbAvailableHours.contains(filename)) continue;
+            try {
+                Log.d(getClass().getSimpleName(), "parsing export.bin ...");
+                TemporaryExposureKeyExportParser.TemporaryExposureKeyExport tek = country.getParsedKeysForDateHour(day, hour);
+                Log.d(getClass().getSimpleName(), "parsing export.bin DONE");
+
+                importTekInDatabase(countryId, filename, tek);
+            } catch (Country.CountryDownloadException e) {
+                Log.e(getClass().getSimpleName(), "Error downloading " + country.getCountryCode() + " -> " + day + ": " + e.getLocalizedMessage());
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void importTekInDatabase(long countryId, String filename, TemporaryExposureKeyExportParser.TemporaryExposureKeyExport tek) {
         Database db = Database.getInstance(getApplicationContext());
 
-        Log.d(getClass().getSimpleName(), "creating file in DB ...");
+        Log.d(getClass().getSimpleName(), "creating file \"" + filename + "\" in DB ...");
         // insert new file in db
         CwaCountryFile cwaCountryFile = new CwaCountryFile();
         cwaCountryFile.countryId = countryId;
-        cwaCountryFile.filename = day;
+        cwaCountryFile.filename = filename;
         cwaCountryFile.timestamp = new Date();
 
         final long cwaCountryFileId = db.runSync(() -> db.cwaDatabase().cwaCountryFile().insert(cwaCountryFile));
@@ -385,8 +442,6 @@ public class DiagKeySyncWorker extends Worker {
         Log.d(getClass().getSimpleName(), "inserting diag key entries in DB ...");
         db.runSync(() -> db.cwaDatabase().cwaDiagKey().insert(diagKeyList));
         Log.d(getClass().getSimpleName(), "inserting diag key entries in DB ... DONE");
-
-        return true;
     }
 
     private boolean checkDiagKeys() {

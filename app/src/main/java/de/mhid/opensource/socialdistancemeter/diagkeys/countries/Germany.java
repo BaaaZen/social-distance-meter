@@ -34,4 +34,7 @@ public class Germany extends Country {
     public int getCountryName() {
         return R.string.country_de;
     }
+
+    @Override
+    public boolean offersHourlyKeys() { return true; }
 }
