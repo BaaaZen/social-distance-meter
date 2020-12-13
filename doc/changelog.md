@@ -2,6 +2,7 @@
 
 ## 0.0.5 (Alpha)
 * Fixed Autostart
+* Moved BLE scanner to a thread instead of using Handler in UI Thread
 * Hourly downloading of diagnosis keys (if available)
 * Improved syncing of diagnosis keys
 
