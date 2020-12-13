@@ -354,7 +354,7 @@ public class DiagKeySyncWorker extends Worker {
             String filename = cwaCountryFile.filename;
             if(filename.contains("/")) {
                 // date/hour key file
-                String date = filename.split("/", 1)[0];
+                String date = filename.split("/", 2)[0];
                 if(!dbAvailableFilesPerDate.containsKey(date)) dbAvailableFilesPerDate.put(date, new ArrayList<>());
                 //noinspection ConstantConditions
                 dbAvailableFilesPerDate.get(date).add(filename);
