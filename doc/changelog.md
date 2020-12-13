@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.0.6 (Alpha)
+* 
+
 ## 0.0.5 (Alpha)
 * Fixed Autostart
 * Moved BLE scanner to a thread instead of using Handler in UI Thread
