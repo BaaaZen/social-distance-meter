@@ -103,9 +103,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <string name="card_risks_last_update_date">Last synchronization: %1$s</string>
     <string name="card_risks_diag_key_count"># of diagnosis keys: %1$s</string>
     <string name="card_risks_start_sync_command">Synchronize diagnosis keys</string>
-    <string name="card_risks_sync_status_starting">Starting to sync ...</string>
+    <string name="card_risks_sync_status_starting_download">Starting to download keys ...</string>
     <string name="card_risks_sync_status_download_country">Downloading keys for %1$s</string>
-    <string name="card_risks_sync_status_comparing">Comparing diagnosis keys (%1$d%%)</string>
+    <string name="card_risks_sync_status_starting_compare">Starting to compare keys ...</string>
+    <string name="card_risks_sync_status_comparing">Comparing diagnosis keys %1$s (%2$d%% done)</string>
     <string name="card_risks_sync_status_error_unknown">Unknown error</string>
     <string name="card_risks_sync_status_error_download">Error downloading diagnosis keys.</string>
     <string name="card_risks_sync_status_error_checking">Error checking diagnosis keys.</string>

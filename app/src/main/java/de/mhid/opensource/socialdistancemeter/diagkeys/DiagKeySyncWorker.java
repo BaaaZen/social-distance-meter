@@ -22,6 +22,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
@@ -34,6 +35,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -46,6 +48,7 @@ import de.mhid.opensource.socialdistancemeter.database.CwaCountry;
 import de.mhid.opensource.socialdistancemeter.database.CwaCountryFile;
 import de.mhid.opensource.socialdistancemeter.database.CwaDiagKey;
 import de.mhid.opensource.socialdistancemeter.database.CwaToken;
+import de.mhid.opensource.socialdistancemeter.database.CwaTokenDistinct;
 import de.mhid.opensource.socialdistancemeter.database.CwaTokenMinRollingTimestamp;
 import de.mhid.opensource.socialdistancemeter.database.Database;
 import de.mhid.opensource.socialdistancemeter.diagkeys.countries.Country;
@@ -57,6 +60,8 @@ import de.mhid.opensource.socialdistancemeter.utils.HexString;
 
 public class DiagKeySyncWorker extends Worker {
     public final static String WORK_PARAMETER_BACKGROUND = "background";
+
+    public final static int ROLLING_TIMESTAMP_MATCH_THRESHOLD = 3; // 30 mins
 
     private static final ReentrantLock lock = new ReentrantLock();
     public static boolean isRunning() {
@@ -89,44 +94,71 @@ public class DiagKeySyncWorker extends Worker {
     }
 
     static class TimeslotDiagKeys {
-        private final CwaDiagKey referenceDiagKey;
+        private long rollingStartIntervalNumber;
+        private long rollingEndIntervalNumber;
         private final List<DiagKeyCrypto> diagKeys = new ArrayList<>();
         public TimeslotDiagKeys(CwaDiagKey referenceDiagKey) {
-            this.referenceDiagKey = referenceDiagKey;
+            this.rollingStartIntervalNumber = referenceDiagKey.rollingStartIntervalNumber;
+            this.rollingEndIntervalNumber = referenceDiagKey.rollingStartIntervalNumber + referenceDiagKey.rollingPeriod;
         }
 
         public boolean belongsToThisTimeslot(CwaDiagKey diagKey) {
-            return diagKey.rollingStartIntervalNumber == referenceDiagKey.rollingStartIntervalNumber && diagKey.rollingPeriod == referenceDiagKey.rollingPeriod;
+            return diagKey.rollingStartIntervalNumber == rollingStartIntervalNumber
+                || diagKey.rollingStartIntervalNumber + diagKey.rollingPeriod == rollingEndIntervalNumber
+                || (
+                    diagKey.rollingStartIntervalNumber <= rollingStartIntervalNumber
+                    && diagKey.rollingStartIntervalNumber + diagKey.rollingPeriod >= rollingEndIntervalNumber
+                );
         }
 
         public void addDiagKey(CwaDiagKey diagKey) {
+            if(diagKey.rollingStartIntervalNumber < rollingStartIntervalNumber) rollingStartIntervalNumber = diagKey.rollingStartIntervalNumber;
+            if(diagKey.rollingStartIntervalNumber + diagKey.rollingPeriod < rollingEndIntervalNumber) rollingEndIntervalNumber = diagKey.rollingStartIntervalNumber + diagKey.rollingPeriod;
             diagKeys.add(new DiagKeyCrypto(diagKey));
         }
 
-        public List<DiagKeyCrypto> getDiagKeys() {
+        public List<Pair<String, DiagKeyCrypto>> getSortedRPIsForDiagKeys() throws DiagKeyCrypto.CryptoError {
+            ArrayList<Pair<String,DiagKeyCrypto>> sortedRPIs = new ArrayList<>();
+            for (DiagKeyCrypto diagKey : diagKeys) {
+                sortedRPIs.addAll(diagKey.getAllRPIs());
+            }
+            Collections.sort(sortedRPIs, (o1, o2) -> o1.first.compareTo(o2.first));
+            return sortedRPIs;
+        }
+
+        public List<CwaDiagKey> getDiagKeys() {
+            ArrayList<CwaDiagKey> diagKeys = new ArrayList<>();
+            for(DiagKeyCrypto diagKey : this.diagKeys) {
+                diagKeys.add(diagKey.getDiagKey());
+            }
             return diagKeys;
         }
-    }
 
-    static class TimeslotTokens {
-        private final CwaToken referenceToken;
-        private final List<CwaToken> tokens = new ArrayList<>();
-        public TimeslotTokens(CwaToken referenceToken) {
-            this.referenceToken = referenceToken;
-        }
-
-        public boolean belongsToThisTimeslot(CwaToken token) {
-            return token.rollingTimestamp == referenceToken.rollingTimestamp;
-        }
-
-        public void addToken(CwaToken token) {
-            tokens.add(token);
-        }
-
-        public List<CwaToken> getTokens() {
-            return tokens;
+        public String getDateString() {
+            Date d = new Date(rollingStartIntervalNumber * 10 * 60 * 1000);
+            return DateFormat.getDateInstance(DateFormat.MEDIUM).format(d);
         }
     }
+
+//    static class TimeslotTokens {
+//        private final CwaToken referenceToken;
+//        private final List<CwaToken> tokens = new ArrayList<>();
+//        public TimeslotTokens(CwaToken referenceToken) {
+//            this.referenceToken = referenceToken;
+//        }
+//
+//        public boolean belongsToThisTimeslot(CwaToken token) {
+//            return token.rollingTimestamp == referenceToken.rollingTimestamp;
+//        }
+//
+//        public void addToken(CwaToken token) {
+//            tokens.add(token);
+//        }
+//
+//        public List<CwaToken> getTokens() {
+//            return tokens;
+//        }
+//    }
 
 
     private final SharedPreferences sharedPreferences;
@@ -163,7 +195,7 @@ public class DiagKeySyncWorker extends Worker {
             return Result.success();
         }
 
-        setForegroundAsync(createForegroundInfo(getApplicationContext().getString(R.string.card_risks_sync_status_starting), 0));
+        setForegroundAsync(createForegroundInfo(getApplicationContext().getString(R.string.card_risks_sync_status_starting_download), 0));
 
         Log.i(getClass().getSimpleName(), "Starting to work ... :-)");
         String error = getApplicationContext().getString(R.string.card_risks_sync_status_error_unknown);
@@ -176,14 +208,14 @@ public class DiagKeySyncWorker extends Worker {
         }
 
         try {
-            sendSyncStatusUpdate(getApplicationContext().getString(R.string.card_risks_sync_status_starting),0);
+            sendSyncStatusUpdate(getApplicationContext().getString(R.string.card_risks_sync_status_starting_download),0);
 
             List<Country> countries = new ArrayList<>(Arrays.asList(CountryList.COUNTRIES));
 
             boolean success = downloadDailyKeys(countries);
             if(!success) error = getApplicationContext().getString(R.string.card_risks_sync_status_error_download);
 
-
+            sendSyncStatusUpdate(getApplicationContext().getString(R.string.card_risks_sync_status_starting_compare),50);
             Log.i(getClass().getSimpleName(), "Downloading is done with success: " + success);
 
             boolean checkSuccess = checkDiagKeys();
@@ -455,82 +487,93 @@ public class DiagKeySyncWorker extends Worker {
         // group diag keys by timeslots
         List<CwaDiagKey> diagKeyList = db.runSync(() -> db.cwaDatabase().cwaDiagKey().getUncheckedInRollingSection(cwaTokenMinRollingTimestamp.minRollingTimestamp));
         TimeslotDiagKeys timeslot = null;
+        int percent = 0;
         int diagKeyCounter = 0;
         for(CwaDiagKey diagKey : diagKeyList) {
-            // status update
-            if(diagKeyCounter % (diagKeyList.size()/100) == 0) {
-                int percent = diagKeyCounter * 100 / diagKeyList.size();
-                int progress = 50 + percent*50/100;
-                sendSyncStatusUpdate(getApplicationContext().getString(R.string.card_risks_sync_status_comparing, percent), progress);
-            }
+            // status precalc
+            percent = diagKeyCounter * 100 / diagKeyList.size();
             diagKeyCounter++;
 
             if(timeslot != null && !timeslot.belongsToThisTimeslot(diagKey)) {
-                success &= checkDiagKeysForTimeslot(timeslot);
+                success &= checkDiagKeysForDay(timeslot, percent);
                 timeslot = null;
             }
             if(timeslot == null) timeslot = new TimeslotDiagKeys(diagKey);
             timeslot.addDiagKey(diagKey);
         }
-        if(timeslot != null) success &= checkDiagKeysForTimeslot(timeslot);
+        if(timeslot != null) success &= checkDiagKeysForDay(timeslot, percent);
 
         return success;
     }
 
-    private boolean checkDiagKeysForTimeslot(TimeslotDiagKeys timeslotDiagKeys) {
+    private boolean checkDiagKeysForDay(TimeslotDiagKeys timeslotDiagKeys, int percent) {
+        // status update
+        int progress = 50 + percent*50/100;
+        sendSyncStatusUpdate(getApplicationContext().getString(R.string.card_risks_sync_status_comparing, timeslotDiagKeys.getDateString(), percent), progress);
+
         Database db = Database.getInstance(getApplicationContext());
 
-        boolean success = true;
-
-        List<CwaToken> tokenList = db.runSync(() -> db.cwaDatabase().cwaToken().getRollingSection(timeslotDiagKeys.referenceDiagKey.rollingStartIntervalNumber, timeslotDiagKeys.referenceDiagKey.rollingStartIntervalNumber + timeslotDiagKeys.referenceDiagKey.rollingPeriod));
-        TimeslotTokens timeslotTokens = null;
-        for(CwaToken token : tokenList) {
-            if (timeslotTokens != null && !timeslotTokens.belongsToThisTimeslot(token)) {
-                success &= checkDiagKeysForOnePeriod(timeslotDiagKeys, timeslotTokens);
-                timeslotTokens = null;
-            }
-            if (timeslotTokens == null) timeslotTokens = new TimeslotTokens(token);
-            timeslotTokens.addToken(token);
-        }
-        if(timeslotTokens != null) success &= checkDiagKeysForOnePeriod(timeslotDiagKeys, timeslotTokens);
-
-        return success;
-    }
-
-    private boolean checkDiagKeysForOnePeriod(TimeslotDiagKeys timeslotDiagKeys, TimeslotTokens timeslotTokens) {
-        List<CwaToken> updateTokens = new ArrayList<>();
-        List<CwaDiagKey> updateDiagKeys = new ArrayList<>();
-
-        boolean success = true;
-
+        // get sorted list of all tokens collected this day
+        int queryMargin = ROLLING_TIMESTAMP_MATCH_THRESHOLD;
+        List<CwaTokenDistinct> tokenList = db.runSync(() -> db.cwaDatabase().cwaToken().getDistinctTokensForDay(timeslotDiagKeys.rollingStartIntervalNumber - queryMargin, timeslotDiagKeys.rollingEndIntervalNumber + queryMargin));
+        List<Pair<String, DiagKeyCrypto>> rpiList;
         try {
-            for (DiagKeyCrypto diagKeyCrypto : timeslotDiagKeys.getDiagKeys()) {
-                CwaDiagKey diagKey = diagKeyCrypto.getDiagKey();
-                for (CwaToken token : timeslotTokens.getTokens()) {
-                    if(token.diagKey != null) continue;
-                    if (diagKeyCrypto.isTokenMatching(token.token, token.rollingTimestamp)) {
-                        // matching key!
-                        token.diagKey = diagKey.id;
-                        updateTokens.add(token);
-                    }
-                }
+            rpiList = timeslotDiagKeys.getSortedRPIsForDiagKeys();
+        } catch (DiagKeyCrypto.CryptoError cryptoError) {
+            Log.e(getClass().getSimpleName(), "Checking diagnosis keys not possible. Crypto error: " + cryptoError);
+            return false;
+        }
 
-                diagKey.flagChecked = true;
-                updateDiagKeys.add(diagKey);
+        ArrayList<Pair<CwaTokenDistinct, Pair<String, DiagKeyCrypto>>> potentialMatches = new ArrayList<>();
+        int ptr = 0;
+        for(CwaTokenDistinct token : tokenList) {
+            while(true) {
+                if(ptr >= rpiList.size()) break;
+                Pair<String, DiagKeyCrypto> rpi = rpiList.get(ptr);
+                int cmp = rpi.first.compareTo(token.token);
+
+                // rpi greater than token
+                if(cmp > 0) break;
+                ptr++;
+
+                // rpi lower than token
+                if(cmp < 0) continue;
+
+                // potential match!
+                potentialMatches.add(new Pair<>(token, rpi));
             }
-        } catch(DiagKeyCrypto.CryptoError e) {
-            Log.e(getClass().getSimpleName(), "Checking diagnosis keys not possible. Crypto error: " + e);
-            success = false;
         }
 
-        Database db = Database.getInstance(getApplicationContext());
-        if(!updateTokens.isEmpty()) {
-            db.runSync(() -> db.cwaDatabase().cwaToken().update(updateTokens));
-        }
-        if(!updateDiagKeys.isEmpty()) {
-            db.runSync(() -> db.cwaDatabase().cwaDiagKey().update(updateDiagKeys));
+        // validate matches
+        ArrayList<Pair<CwaTokenDistinct, Pair<String, DiagKeyCrypto>>> realMatches = new ArrayList<>();
+        for(Pair<CwaTokenDistinct, Pair<String, DiagKeyCrypto>> match : potentialMatches) {
+            try {
+                long rollingTimestampOfDiagKey = match.second.second.getRollingTimestampForRpi(match.second.first);
+                if(rollingTimestampOfDiagKey == -1) continue;
+                if(Math.abs(rollingTimestampOfDiagKey - match.first.rollingTimestamp) < ROLLING_TIMESTAMP_MATCH_THRESHOLD) {
+                    // real match!
+                    realMatches.add(match);
+                }
+            } catch (DiagKeyCrypto.CryptoError ignored) { }
         }
 
-        return success;
+        // flag diag keys as checked
+        List<CwaDiagKey> diagKeys = timeslotDiagKeys.getDiagKeys();
+        if(!diagKeys.isEmpty()) {
+            for(CwaDiagKey diagKey : diagKeys) {
+                diagKey.flagChecked = true;
+            }
+            db.runSync(() -> db.cwaDatabase().cwaDiagKey().update(diagKeys));
+        }
+
+        // update matches in db
+        for(Pair<CwaTokenDistinct, Pair<String, DiagKeyCrypto>> match : realMatches) {
+            db.runSync((Database.RunnableWithReturn<Void>) () -> {
+                db.cwaDatabase().cwaToken().linkTokenToDiagKey(match.second.second.getDiagKey().id, match.first.token, match.first.mac, match.first.rollingTimestamp);
+                return null;
+            });
+        }
+
+        return true;
     }
 }

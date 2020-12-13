@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 package de.mhid.opensource.socialdistancemeter.diagkeys;
 
 import android.annotation.SuppressLint;
+import android.util.Pair;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -25,8 +26,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -46,9 +49,10 @@ public class DiagKeyCrypto {
     private final CwaDiagKey cwaDiagKey;
 
     private byte[] rpiKey = null;
-    private final HashMap<Long, byte[]> calculatedRollingTimestamps = new HashMap<>();
+    private final List<Pair<String, DiagKeyCrypto>> calculatedRollingTimestamps = new ArrayList<>();
 
     public DiagKeyCrypto(CwaDiagKey cwaDiagKey) {
+
         this.cwaDiagKey = cwaDiagKey;
     }
 
@@ -111,38 +115,48 @@ public class DiagKeyCrypto {
         }
     }
 
-    private byte[] getRpiForRollingTimestamp(long rollingTimestamp) throws CryptoError {
-        if(!calculatedRollingTimestamps.containsKey(rollingTimestamp)) {
-            // recalculate
-            byte[] data = ByteBuffer.allocate(16)
-                .order(ByteOrder.LITTLE_ENDIAN)
-                .put("EN-RPI".getBytes(StandardCharsets.UTF_8))
-                .put(new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
-                .putInt((int) (rollingTimestamp & 0xffffffffL))
-                .array();
-
-            calculatedRollingTimestamps.put(rollingTimestamp, aesEncrypt(getRpiKey(), data));
+    public List<Pair<String,DiagKeyCrypto>> getAllRPIs() throws CryptoError {
+        if(calculatedRollingTimestamps.isEmpty()) {
+            for(int i=0; i<cwaDiagKey.rollingPeriod; i++) {
+                long rollingTimestamp = cwaDiagKey.rollingStartIntervalNumber + i;
+                // recalculate
+                byte[] data = ByteBuffer.allocate(16)
+                        .order(ByteOrder.LITTLE_ENDIAN)
+                        .put("EN-RPI".getBytes(StandardCharsets.UTF_8))
+                        .put(new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
+                        .putInt((int) (rollingTimestamp & 0xffffffffL))
+                        .array();
+                String rpi = HexString.toHexString(aesEncrypt(getRpiKey(), data));
+                calculatedRollingTimestamps.add(new Pair<>(rpi, this));
+            }
         }
-
-        return calculatedRollingTimestamps.get(rollingTimestamp);
+        return calculatedRollingTimestamps;
     }
 
-    public boolean isTokenMatching(String token, long rollingTimestamp) throws CryptoError {
-        String rpi = token.substring(0, 32);
-//        String aem = token.substring(32);
-
-        byte[] rpiFromToken = HexString.toByteArray(rpi);
-//        byte[] aemKey = HexString.toByteArray(aem);
-
-        // compare with rpi of a rolling timestamp diff ~ 30mins
-        for(long rti=rollingTimestamp-3; rti<=rollingTimestamp+3; rti++) {
-            if(rti < cwaDiagKey.rollingStartIntervalNumber) continue;
-            if(rti >= cwaDiagKey.rollingStartIntervalNumber + cwaDiagKey.rollingPeriod) break;
-
-            byte[] rpiFromDiagKey = getRpiForRollingTimestamp(rti);
-            if(Arrays.equals(rpiFromToken, rpiFromDiagKey)) return true;
+    public long getRollingTimestampForRpi(String token) throws CryptoError {
+        List<Pair<String, DiagKeyCrypto>> rpis = getAllRPIs();
+        for(int i=0; i<rpis.size(); i++) {
+            if(rpis.get(i).first.equals(token)) return cwaDiagKey.rollingStartIntervalNumber + i;
         }
-
-        return false;
+        return -1;
     }
+//
+//    public boolean isTokenMatching(String token, long rollingTimestamp) throws CryptoError {
+//        String rpi = token.substring(0, 32);
+////        String aem = token.substring(32);
+//
+//        byte[] rpiFromToken = HexString.toByteArray(rpi);
+////        byte[] aemKey = HexString.toByteArray(aem);
+//
+//        // compare with rpi of a rolling timestamp diff ~ 30mins
+//        for(long rti=rollingTimestamp-3; rti<=rollingTimestamp+3; rti++) {
+//            if(rti < cwaDiagKey.rollingStartIntervalNumber) continue;
+//            if(rti >= cwaDiagKey.rollingStartIntervalNumber + cwaDiagKey.rollingPeriod) break;
+//
+//            byte[] rpiFromDiagKey = getRpiForRollingTimestamp(rti);
+//            if(Arrays.equals(rpiFromToken, rpiFromDiagKey)) return true;
+//        }
+//
+//        return false;
+//    }
 }

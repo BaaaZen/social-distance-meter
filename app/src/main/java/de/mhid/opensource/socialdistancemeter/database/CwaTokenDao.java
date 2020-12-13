@@ -30,8 +30,8 @@ public interface CwaTokenDao {
   @Insert
   long insert(CwaToken token);
 
-  @Update
-  Void update(List<CwaToken> tokens);
+  @Query("UPDATE cwa_token SET diagkey_id = :diagKey WHERE token = :token AND mac = :mac AND rolling_timestamp = :rollingTimestamp")
+  void linkTokenToDiagKey(long diagKey, String token, String mac, long rollingTimestamp);
 
   @Query("SELECT * FROM cwa_token")
   List<CwaToken> getAll();
@@ -42,8 +42,8 @@ public interface CwaTokenDao {
   @Query("SELECT mac, rssi, local_timestamp/600000 as localRollingTimestamp FROM cwa_token WHERE local_timestamp/600000 >= :minRollingTimestamp AND local_timestamp/600000 <= :maxRollingTimestamp ORDER BY rolling_timestamp DESC, rssi ASC, mac ASC")
   List<CwaTokenStatistics> getStatistics(long minRollingTimestamp, long maxRollingTimestamp);
 
-  @Query("SELECT * FROM cwa_token WHERE diagkey_id IS NULL AND rolling_timestamp >= :minRollingTimestamp AND rolling_timestamp < :maxRollingTimestamp ORDER BY rolling_timestamp ASC, mac ASC, token ASC")
-  List<CwaToken> getRollingSection(long minRollingTimestamp, long maxRollingTimestamp);
+  @Query("SELECT DISTINCT token, mac, rolling_timestamp as rollingTimestamp FROM cwa_token WHERE diagkey_id IS NULL AND rolling_timestamp >= :minRollingTimestamp AND rolling_timestamp < :maxRollingTimestamp ORDER BY token ASC")
+  List<CwaTokenDistinct> getDistinctTokensForDay(long minRollingTimestamp, long maxRollingTimestamp);
 
   @Query("SELECT diagkey_id as diagKeyId, MIN(local_timestamp) as minLocalTimestamp, MAX(local_timestamp) as maxLocalTimestamp FROM cwa_token WHERE diagkey_id = null GROUP BY diagkey_id;")
   List<CwaTokenRisk> getRisks();
