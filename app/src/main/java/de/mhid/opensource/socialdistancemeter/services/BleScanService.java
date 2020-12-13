@@ -63,6 +63,7 @@ public class BleScanService extends Service {
   private static HashMap<String, CwaScanResult> staticScanResults = null;
 
   private static synchronized void setScanResults(HashMap<String, CwaScanResult> scanResults) {
+    if(scanResults == null) scanResults = new HashMap<>();
     BleScanService.staticScanResults = scanResults;
   }
 
@@ -380,12 +381,14 @@ public class BleScanService extends Service {
   public void scanPermissionError() {
     // no location permission -> no results!
     recentUserCount = null;
+    setScanResults(null);
     sendScanResultUserCount(MainActivity.COUNT_ERROR_UNABLE_TO_SCAN);
   }
 
   public void scanBluetoothError() {
     // bluetooth disabled -> no results!
     recentUserCount = null;
+    setScanResults(null);
     sendScanResultUserCount(MainActivity.COUNT_ERROR_UNABLE_TO_SCAN);
   }
 
