@@ -39,8 +39,8 @@
     <string name="card_risks_sync_status_error_download">Diagnoseschlüssel konnten nicht heruntergeladen werden.</string>
     <string name="card_risks_sync_status_error_checking">Diagnoseschlüssel konnten nicht vergllichen werden.</string>
     <string name="notification_title">Social Distance Meter</string>
-    <string name="settings_title_scan_period_value_30sec">30 Sekunden</string>
     <string name="settings_title_scan_period_value_1min_rec">1 Minute (empfohlen)</string>
+    <string name="settings_title_scan_period_value_2min">2 Minuten</string>
     <string name="settings_title_scan_period_value_3min">3 Minuten</string>
     <string name="settings_title_scan_period_value_5min">5 Minuten</string>
     <string name="settings_title_scan_location_period_value_continuous">kontinuierlich</string>

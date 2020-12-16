@@ -184,9 +184,9 @@ public class BleScanService extends Service {
       String[] scanPeriodValues = getResources().getStringArray(R.array.settings_list_scan_period_values);
       long scanPeriodValue = 60000;
       if (scanPeriod.equals(scanPeriodValues[0])) {
-        scanPeriodValue = 30000; // 30s
-      } else if (scanPeriod.equals(scanPeriodValues[1])) {
         scanPeriodValue = 60000; // 1m
+      } else if (scanPeriod.equals(scanPeriodValues[1])) {
+        scanPeriodValue = 2 * 60000; // 2m
       } else if (scanPeriod.equals(scanPeriodValues[2])) {
         scanPeriodValue = 3 * 60000; // 3m
       } else if (scanPeriod.equals(scanPeriodValues[3])) {

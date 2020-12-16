@@ -47,13 +47,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <string name="settings_category_scan">Scan settings</string>
     <string name="settings_title_scan_active">Scanning enabled</string>
     <string name="settings_title_scan_period">Scan period</string>
-    <string name="settings_title_scan_period_value_30sec">30 seconds</string>
     <string name="settings_title_scan_period_value_1min_rec">1 minute (recommended)</string>
+    <string name="settings_title_scan_period_value_2min">2 minutes</string>
     <string name="settings_title_scan_period_value_3min">3 minutes</string>
     <string name="settings_title_scan_period_value_5min">5 minutes</string>
     <string-array name="settings_list_scan_period_description">
-        <item>@string/settings_title_scan_period_value_30sec</item>
         <item>@string/settings_title_scan_period_value_1min_rec</item>
+        <item>@string/settings_title_scan_period_value_2min</item>
         <item>@string/settings_title_scan_period_value_3min</item>
         <item>@string/settings_title_scan_period_value_5min</item>
     </string-array>

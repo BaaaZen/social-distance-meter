@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.0.6 (Alpha)
-* 
+* Scanning interval minimum 1 minute, otherwise scan service gets killed every now and then
 
 ## 0.0.5 (Alpha)
 * Fixed Autostart

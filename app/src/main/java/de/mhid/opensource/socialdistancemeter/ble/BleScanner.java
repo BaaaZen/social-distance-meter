@@ -125,8 +125,6 @@ public class BleScanner extends Thread {
         }
       }
 
-      lastScanTime = System.currentTimeMillis();
-
       // check if app has location permission
       boolean hasLocationPermission = ActivityCompat.checkSelfPermission(service, Manifest.permission.ACCESS_FINE_LOCATION) ==
               PackageManager.PERMISSION_GRANTED;
@@ -149,6 +147,8 @@ public class BleScanner extends Thread {
       setNextSleepTime(sleepTime, true);
 
       Log.i("scheduleScan", "scanning done!");
+
+      lastScanTime = System.currentTimeMillis();
     }
   }
 
