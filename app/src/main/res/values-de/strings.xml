@@ -51,6 +51,7 @@
     <string name="card_current_users_count_pl_one">%d Person in der Nähe.</string>
     <string name="card_current_users_count_pl_other">%d Personen in der Nähe.</string>
     <string name="national_warn_app_name">@string/official_warn_app_name_de</string>
+    <string name="national_warn_app_package_name">@string/official_warn_app_package_name_de</string>
     <string name="card_permissions_description_location">Die Basisfunktion dieser App ist das Scannen und Protokollieren von Kennungen der %1$s, die über Bluetooth Low Energy (BLE) ausgesendet werden.\nUm Kennungen über BLE empfangen zu können benötigt die App die Berechtigung "Standort".\n\nAufgrund der Einschränkungen durch Android kann die App ohne die Berechtigung "Standort" keine Kennungen empfangen.</string>
     <string name="card_permissions_description_background">Du hast der App bereits die Berechtigung "Standort" freigegeben, jedoch nur während die App im Vordergrund aktiv ist.\n\nDamit die App die Kennungen permanent im Hintergrund empfangen kann, muss die Berechtigung "Standort" auf den Wert "%1$s" gesetzt werden.</string>
     <string name="card_permissions_description_location_background">Die Basisfunktion dieser App ist das Scannen und Protokollieren von Kennungen der %1$s, die über Bluetooth Low Energy (BLE) ausgesendet werden.\nUm Kennungen über BLE empfangen zu können benötigt die App die Berechtigung "Standort".\n\nAufgrund der Einschränkungen durch Android kann die App ohne die Berechtigung "Standort" keine Kennungen empfangen.\nDamit die App die Kennungen permanent im Hintergrund empfangen kann, muss die Berechtigung "Standort" auf den Wert "%2$s" gesetzt werden.</string>
@@ -67,4 +68,7 @@
     <string name="notification_sync_title">Synchronisiere Diagnoseschlüssel ...</string>
     <string name="card_risks_sync_status_starting_download">Beginne Download ...</string>
     <string name="card_risks_sync_status_starting_compare">Beginne Synchronisierung ...</string>
+    <string name="card_official_warn_app_missing_title">Offizielle Warn-App fehlt</string>
+    <string name="card_official_warn_app_missing_description">Es scheint so als hätten Sie die offizielle nationale Warn-App (%1$s) nicht installiert. Diese App ist eine Erweiterung zur offiziellen Warn-App, kein Ersatz. Sie sollten immer, um sich selbst und ihre Mitmenschen zu schützen, die offizielle Warn-App installieren.\n\nDiese Warnung wird verschwinden wenn eine offizielle Warn-App installiert ist.\n\nFalls Sie bereits eine offizielle Warn-App installiert haben, diese aber fälschlicherweise nicht erkannt wird, melden Sie das Problem bitte an den Author.</string>
+    <string name="card_official_warn_app_missing_command_install">%1$s im Play Store öffnen</string>
 </resources>
