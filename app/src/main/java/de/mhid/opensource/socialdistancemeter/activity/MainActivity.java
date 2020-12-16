@@ -43,6 +43,7 @@ import com.google.android.material.appbar.CollapsingToolbarLayout;
 
 import de.mhid.opensource.socialdistancemeter.AppInformation;
 import de.mhid.opensource.socialdistancemeter.R;
+import de.mhid.opensource.socialdistancemeter.activity.maincards.CardOfficialWarnAppMissing;
 import de.mhid.opensource.socialdistancemeter.activity.maincards.CardRisks;
 import de.mhid.opensource.socialdistancemeter.services.BleScanService;
 import de.mhid.opensource.socialdistancemeter.services.DiagKeySyncService;
@@ -57,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
   public static final int COUNT_ERROR_SCANNING_IN_PROGRESS = -1;
   public static final int COUNT_ERROR_UNABLE_TO_SCAN = -2;
 
+  private CardOfficialWarnAppMissing cardOfficialWarnAppMissing = null;
   private CardRisks cardRisks = null;
 
   @Override
@@ -69,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
     CollapsingToolbarLayout toolBarLayout = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
     toolBarLayout.setTitle(getTitle());
 
+    cardOfficialWarnAppMissing = new CardOfficialWarnAppMissing(this);
     cardRisks = new CardRisks(this);
 
     // click handler for permission card
@@ -228,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
     TextView permissionDescription = (TextView)findViewById(R.id.card_permissions_description);
     TextView permissionCommand = (TextView)findViewById(R.id.card_permissions_command);
 
-    String nationalCWAName = getResources().getString(R.string.national_cwa_name);
+    String nationalCWAName = getResources().getString(R.string.national_warn_app_name);
     String backgroundPermissionOptionLabel = getResources().getString(R.string.card_permissions_label_background_permission);
     if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
       backgroundPermissionOptionLabel = getPackageManager().getBackgroundPermissionOptionLabel().toString();

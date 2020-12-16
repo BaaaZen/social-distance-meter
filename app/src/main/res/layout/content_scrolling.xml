@@ -42,6 +42,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             android:visibility="gone" />
 
         <include
+            android:id="@+id/card_official_warn_app_missing"
+            layout="@layout/card_official_warn_app_missing"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone" />
+
+        <include
             android:id="@+id/card_current"
             layout="@layout/card_current"
             android:layout_width="match_parent"

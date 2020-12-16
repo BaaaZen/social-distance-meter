@@ -55,7 +55,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             app:srcCompat="@drawable/round_error_outline_24" />
 
         <TextView
-            android:id="@+id/card_official_warn_app_missingcard_permissions_description"
+            android:id="@+id/card_official_warn_app_missing_description"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
@@ -73,7 +73,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             android:layout_marginTop="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/card_official_warn_app_missingcard_permissions_description"
+            app:layout_constraintTop_toBottomOf="@+id/card_official_warn_app_missing_description"
             app:srcCompat="@drawable/round_arrow_forward_24" />
 
         <TextView
@@ -86,7 +86,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             android:text="@string/placeholder"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/card_official_warn_app_missing_forward_arrow"
-            app:layout_constraintTop_toBottomOf="@+id/card_official_warn_app_missingcard_permissions_description" />
+            app:layout_constraintTop_toBottomOf="@+id/card_official_warn_app_missing_description" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

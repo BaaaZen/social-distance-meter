@@ -42,6 +42,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <item>gathering</item>
     </string-array>
 
+    <!-- internal: list of national warn app package names -->
+    <string name="official_warn_app_package_name_de" translatable="false">de.rki.coronawarnapp</string>
+    <string name="official_warn_app_name_de" translatable="false">Corona Warn App</string>
+
+    <string-array name="official_warn_app_package_names">
+        <item>@string/official_warn_app_package_name_de</item>
+    </string-array>
+
     <!-- hidden/internal setting keys -->
     <string name="internal_settings_key_last_scan_timestamp" translatable="false">internal_settings_key_last_scan_timestamp</string>
 </resources>

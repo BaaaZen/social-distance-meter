@@ -25,7 +25,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <string name="unknown_error">Unknown Error</string>
     <string name="markdown_error">Error loading markdown from %1$s:\n%2$s</string>
 
-    <string name="national_cwa_name">(National Corona Tracking App)</string>
+    <string name="national_warn_app_name">@string/official_warn_app_name_de</string>
+    <string name="national_warn_app_package_name">@string/official_warn_app_package_name_de</string>
     <string name="date_time_format">%1$s - %2$s</string>
 
     <!-- country names -->
@@ -99,7 +100,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
     <!-- CARD: official warn app missing -->
     <string name="card_official_warn_app_missing_title">Official Warn App missing</string>
-    <string name="card_official_warn_app_missing_description">It seems like you haven\'t installed an official national Warn App (%1$s). This app is an addition to the official Warn App, not a replacement. You should always, to protect you and your environment, install the official Warn App. This warning will disappear when an official Warn App is installed.\nIn case you have installed an official Warn App, but this wasn\'t detected by error, please report the problem.</string>
+    <string name="card_official_warn_app_missing_description">It seems like you haven\'t installed an official national Warn App (%1$s). This app is an addition to the official Warn App, not a replacement. You should always, to protect you and your environment, install the official Warn App.\n\nThis warning will disappear when an official Warn App is installed.\n\nIn case you have installed an official Warn App, but this wasn\'t detected by error, please report the problem to the author.</string>
     <string name="card_official_warn_app_missing_command_install">Open %1$s in Play Store</string>
 
     <!-- CARD: risks -->

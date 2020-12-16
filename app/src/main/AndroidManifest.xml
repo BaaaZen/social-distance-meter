@@ -35,6 +35,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <!-- required to download diagnosis keys -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- required to check if national warn app is installed -->
+    <queries>
+        <package android:name="de.rki.coronawarnapp" />
+    </queries>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
