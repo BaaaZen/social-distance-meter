@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!--
 Social Distance Meter - An app to analyze and rate your social distancing behavior
 Copyright (C) 2020  Mirko Hansen (baaazen@gmail.com)
@@ -16,7 +17,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <resources>
-    <style name="Widget.Theme.SocialDistanceMeter.MyView" parent="">
-        <item name="android:background">@color/gray_400</item>
-    </style>
+    <declare-styleable name="HistoryGraphView">
+        <attr name="colorDraw" format="color" />
+        <attr name="colorFont" format="color" />
+        <attr name="colorWarningHigh" format="color" />
+        <attr name="colorWarningMedium" format="color" />
+        <attr name="colorWarningLow" format="color" />
+    </declare-styleable>
 </resources>

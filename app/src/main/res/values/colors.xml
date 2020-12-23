@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!--
 Social Distance Meter - An app to analyze and rate your social distancing behavior
 Copyright (C) 2020  Mirko Hansen (baaazen@gmail.com)
@@ -17,15 +16,33 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-    <color name="light_blue_400">#FF29B6F6</color>
-    <color name="light_blue_600">#FF039BE5</color>
-    <color name="gray_400">#FFBDBDBD</color>
-    <color name="gray_600">#FF757575</color>
+  <color name="LprimaryColor">#90a4ae</color>
+  <color name="LprimaryLightColor">#c1d5e0</color>
+  <color name="LprimaryDarkColor">#62757f</color>
+  <color name="LsecondaryColor">#778f9b</color>
+  <color name="LsecondaryLightColor">#a6bfcc</color>
+  <color name="LsecondaryDarkColor">#4a626d</color>
+  <color name="LprimaryTextColor">#000000</color>
+  <color name="LsecondaryTextColor">#000000</color>
+  <color name="LcardWarning">#ef5350</color>
+  <color name="LprimaryTintColor">#455a64</color>
+  <color name="LwarningLowColor">#5a9216</color>
+  <color name="LwarningMediumColor">#d6c600</color>
+  <color name="LwarningHighColor">#a30000</color>
+
+
+  <color name="DprimaryColor">#263238</color>
+  <color name="DprimaryLightColor">#4f5b62</color>
+  <color name="DprimaryDarkColor">#000a12</color>
+  <color name="DsecondaryColor">#616161</color>
+  <color name="DsecondaryLightColor">#8e8e8e</color>
+  <color name="DsecondaryDarkColor">#373737</color>
+  <color name="DprimaryTextColor">#ffffff</color>
+  <color name="DsecondaryTextColor">#ffffff</color>
+  <color name="DcardWarning">#7f0000</color>
+  <color name="DprimaryTintColor">#b0bec5</color>
+  <color name="DwarningLowColor">#5a9216</color>
+  <color name="DwarningMediumColor">#d6c600</color>
+  <color name="DwarningHighColor">#a30000</color>
+  <color name="DswitchActivated">#a7c0cd</color>
 </resources>

@@ -19,7 +19,6 @@ package de.mhid.opensource.socialdistancemeter.views;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
@@ -80,7 +79,7 @@ public class CurrentDistanceView extends AbstractView {
 
         // draw self icon
         userSelf.setBounds(0, 0, (int)iconSizeMax, (int)iconSizeMax);
-        userSelf.setColorFilter(Color.BLACK, PorterDuff.Mode.MULTIPLY);
+        userSelf.setColorFilter(colorDraw, PorterDuff.Mode.MULTIPLY);
         drawDrawable(canvas, userSelf, 0, xAxisYCoordinate - iconSizeSelf);
 
         // draw x-axis
@@ -104,7 +103,7 @@ public class CurrentDistanceView extends AbstractView {
         for(BleScanService.CwaScanResult item : sortedResults) {
             int distancePercent = Rssi.getDistancePercentForRssi(item.getRssi());
 
-            int iconColor = Rssi.getColorForRssi(item.getRssi());
+            int iconColor = Rssi.getColorForRssi(item.getRssi(), colorWarningLow, colorWarningMedium, colorWarningHigh);
             float iconSize = (100-distancePercent)*(iconSizeSelf-iconSizeMin)/100+iconSizeMin;
             float posX = iconSizeSelf + distancePercent*xPerPercent;
             if(posX >= lastPosX) {

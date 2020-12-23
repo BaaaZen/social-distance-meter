@@ -3,6 +3,7 @@
 ## 0.0.6 (Alpha)
 * Scanning interval minimum 1 minute, otherwise scan service gets killed every now and then
 * Check if an official national warn app is installed (only Germany supported at the moment)
+* Improved themes
 
 ## 0.0.5 (Alpha)
 * Fixed Autostart

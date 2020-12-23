@@ -22,9 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:clickable="true"
-    app:cardBackgroundColor="@android:color/holo_red_light"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp">
+    style="@style/Theme.SocialDistanceMeter.CardWarning">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -40,9 +38,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:fontFamily="sans-serif-black"
             android:text="@string/card_official_warn_app_missing_title"
-            android:textSize="20sp"
+            style="@style/Theme.SocialDistanceMeter.CardTitle"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 

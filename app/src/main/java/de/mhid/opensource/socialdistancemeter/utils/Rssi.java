@@ -18,28 +18,41 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 package de.mhid.opensource.socialdistancemeter.utils;
 
 import android.graphics.Color;
+import android.util.Log;
+
+import de.mhid.opensource.socialdistancemeter.BuildConfig;
 
 public class Rssi {
     private Rssi() {}
 
-    public static int getColorForRssi(int rssi) {
-        int r;
-        int g;
-        if(rssi >= -65) {
-            r = 255;
-            g = 0;
-        } else if(rssi >= -85) {
-            r = 255;
-            g = 255 - (rssi-(-85))*255/20;
-        } else if(rssi >= -95) {
-            r = (rssi-(-95))*255/10;
-            g = 255;
-        } else {
-            r = 0;
-            g = 255;
-        }
+    private static int getColorBetween(int color1, int color2, int percent) {
+        int r1 = Color.red(color1);
+        int r2 = Color.red(color2);
+        int g1 = Color.green(color1);
+        int g2 = Color.green(color2);
+        int b1 = Color.blue(color1);
+        int b2 = Color.blue(color2);
+        int a1 = Color.alpha(color1);
+        int a2 = Color.alpha(color2);
 
-        return Color.rgb(r, g, 0);
+        int r = r1 + (r2-r1)*percent/100;
+        int g = g1 + (g2-g1)*percent/100;
+        int b = b1 + (b2-b1)*percent/100;
+        int a = a1 + (a2-a1)*percent/100;
+
+        return Color.argb(a, r, g, b);
+    }
+
+    public static int getColorForRssi(int rssi, int colorLow, int colorMedium, int colorHigh) {
+        if(rssi >= -65) {
+            return colorHigh;
+        } else if(rssi >= -85) {
+            return getColorBetween(colorHigh, colorMedium, (-rssi-65)*100/20);
+        } else if(rssi >= -95) {
+            return getColorBetween(colorMedium, colorLow, (-rssi-85)*100/10);
+        } else {
+            return colorLow;
+        }
     }
 
     public static int getDistancePercentForRssi(int rssi) {

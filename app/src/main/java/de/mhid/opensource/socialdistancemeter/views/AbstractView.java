@@ -18,12 +18,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 package de.mhid.opensource.socialdistancemeter.views;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
 
 import androidx.annotation.Nullable;
+
+import de.mhid.opensource.socialdistancemeter.R;
 
 public abstract class AbstractView extends View {
     protected final Paint pText = new Paint();
@@ -32,17 +35,31 @@ public abstract class AbstractView extends View {
     protected final float axisWidth;
     protected final float margin;
 
+    protected final int colorDraw;
+    protected final int colorFont;
+    protected final int colorWarningLow;
+    protected final int colorWarningMedium;
+    protected final int colorWarningHigh;
+
     public AbstractView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
         axisWidth = 1*getResources().getDisplayMetrics().density;
         margin = 3*getResources().getDisplayMetrics().density;
 
-        pText.setColor(Color.BLACK);
+        TypedArray ta = getContext().obtainStyledAttributes(new int[] {R.attr.colorDraw, R.attr.colorFont, R.attr.colorWarningLow, R.attr.colorWarningMedium, R.attr.colorWarningHigh});
+        colorDraw = ta.getColor(0, 0);
+        colorFont = ta.getColor(1, 0);
+        colorWarningLow = ta.getColor(2, 0);
+        colorWarningMedium = ta.getColor(3, 0);
+        colorWarningHigh = ta.getColor(4, 0);
+        ta.recycle();
+
+        pText.setColor(colorFont);
         pText.setTextSize(40);
         pText.setTextAlign(Paint.Align.CENTER);
 
-        pAxis.setColor(Color.BLACK);
+        pAxis.setColor(colorDraw);
         pAxis.setStrokeWidth(axisWidth);
     }
 }

@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
+import de.mhid.opensource.socialdistancemeter.R;
 import de.mhid.opensource.socialdistancemeter.database.CwaTokenStatistics;
 import de.mhid.opensource.socialdistancemeter.database.Database;
 import de.mhid.opensource.socialdistancemeter.utils.Rssi;
@@ -139,7 +140,7 @@ public class HistoryGraphView extends AbstractView {
                 }
             }
             mac.add(statistics.mac);
-            colors.add(Rssi.getColorForRssi(statistics.rssi));
+            colors.add(Rssi.getColorForRssi(statistics.rssi, colorWarningLow, colorWarningMedium, colorWarningHigh));
         }
         paintBlock(canvas, blockX+blockSpacing, yAxis-axisWidth/2 - (yAxis-axisWidth/2)/maxItemsPerRollingTimestamp*mac.size(), blockX+slotWidth-blockSpacing, yAxis-axisWidth/2, colors, alpha);
     }
