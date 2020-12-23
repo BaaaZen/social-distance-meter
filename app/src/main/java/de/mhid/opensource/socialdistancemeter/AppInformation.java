@@ -18,6 +18,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 package de.mhid.opensource.socialdistancemeter;
 
 public class AppInformation {
-    public final static String HOMEPAGE = "https://git.mhid.de/mirko/social-distance-meter";
+    public final static String HOMEPAGE = "https://github.com/BaaaZen/social-distance-meter";
     public final static String VERSION = BuildConfig.VERSION_NAME;
 }
