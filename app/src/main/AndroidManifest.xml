@@ -50,7 +50,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <activity
             android:name=".activity.MainActivity"
             android:label="@string/title_activity_main"
-            android:theme="@style/Theme.SocialDistanceMeter.NoActionBar">
+            android:theme="@style/Theme.SocialDistanceMeter.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -67,14 +67,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         </activity>
         <activity
             android:name=".activity.AboutActivity"
-            android:parentActivityName=".activity.MainActivity">
+            android:parentActivityName=".activity.MainActivity"
+            android:theme="@style/Theme.SocialDistanceMeter.MarkdownActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="de.mhid.opensource.socialdistancemeter.activity.MainActivity" />
         </activity>
         <activity
             android:name=".activity.MarkdownActivity"
-            android:parentActivityName=".activity.MainActivity">
+            android:parentActivityName=".activity.MainActivity"
+            android:theme="@style/Theme.SocialDistanceMeter.MarkdownActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="de.mhid.opensource.socialdistancemeter.activity.MainActivity" />

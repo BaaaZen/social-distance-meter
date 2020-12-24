@@ -32,8 +32,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <item name="android:textColorLink">@color/DsecondaryLightColor</item>
         <!-- Customize your theme here. -->
         <item name="colorControlActivated">@color/DswitchActivated</item>
-        <item name="tint">@color/DprimaryTintColor</item>
-        <item name="tintMode">multiply</item>
 
         <item name="colorDraw">@color/DprimaryTintColor</item>
         <item name="colorFont">@color/DprimaryTextColor</item>
@@ -42,15 +40,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <item name="colorWarningLow">@color/DwarningLowColor</item>
     </style>
 
+    <style name="Theme.SocialDistanceMeter.MainActivity">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+
+        <item name="tint">@color/DprimaryTintColor</item>
+        <item name="tintMode">multiply</item>
+    </style>
+
+    <style name="Theme.SocialDistanceMeter.MarkdownActivity" parent="Theme.SocialDistanceMeter" />
+
     <style name="Theme.SocialDistanceMeter.CardTitle">
         <item name="android:fontFamily">sans-serif-black</item>
         <item name="android:textSize">20sp</item>
         <item name="android:textColor">@color/DprimaryTintColor</item>
-    </style>
-
-    <style name="Theme.SocialDistanceMeter.NoActionBar">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
     </style>
 
     <style name="Theme.SocialDistanceMeter.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />

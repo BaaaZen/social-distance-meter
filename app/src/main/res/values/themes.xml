@@ -30,9 +30,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <item name="android:statusBarColor" tools:targetApi="l">@color/LsecondaryDarkColor</item>
         <item name="android:textColor">@color/LprimaryTextColor</item>
         <!-- Customize your theme here. -->
-        <item name="tint">@color/LprimaryTintColor</item>
-        <item name="tintMode">multiply</item>
-
         <item name="colorDraw">@color/LprimaryTintColor</item>
         <item name="colorFont">@color/LprimaryTextColor</item>
         <item name="colorWarningHigh">@color/LwarningHighColor</item>
@@ -40,15 +37,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <item name="colorWarningLow">@color/LwarningLowColor</item>
     </style>
 
+    <style name="Theme.SocialDistanceMeter.MainActivity">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+
+        <item name="tint">@color/LprimaryTintColor</item>
+        <item name="tintMode">multiply</item>
+    </style>
+
+    <style name="Theme.SocialDistanceMeter.MarkdownActivity" parent="Theme.SocialDistanceMeter" />
+
     <style name="Theme.SocialDistanceMeter.CardTitle">
         <item name="android:fontFamily">sans-serif-black</item>
         <item name="android:textSize">20sp</item>
         <item name="android:textColor">@color/LprimaryTintColor</item>
-    </style>
-
-    <style name="Theme.SocialDistanceMeter.NoActionBar">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
     </style>
 
     <style name="Theme.SocialDistanceMeter.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
