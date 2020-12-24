@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.1 (Beta)
+* Bugfix for dark theme
+
 ## 0.1.0 (Beta)
 * Scanning interval minimum 1 minute, otherwise scan service gets killed every now and then
 * Check if an official national warn app is installed (only Germany supported at the moment)
