@@ -2,6 +2,7 @@
 
 ## 0.1.2 (Beta)
 * Privacy Policy
+* Updated dependencies
 
 ## 0.1.1 (Beta)
 * Bugfix for dark theme
