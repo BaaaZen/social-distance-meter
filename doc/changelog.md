@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.2 (Beta)
+* Privacy Policy
+
 ## 0.1.1 (Beta)
 * Bugfix for dark theme
 

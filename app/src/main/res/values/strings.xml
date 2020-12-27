@@ -40,6 +40,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <string name="menu_main_about_changelog">Changelog</string>
     <string name="menu_main_about_license">License</string>
     <string name="menu_main_about_3rdparty">Third Party Software</string>
+    <string name="menu_main_about_privacy">Privacy Policy</string>
 
     <!-- ABOUT: APP -->
     <string name="about_version">Version: %1$s</string>

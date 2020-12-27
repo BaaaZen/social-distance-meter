@@ -39,6 +39,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             <item
                 android:id="@+id/menu_main_about_3rdparty"
                 android:title="@string/menu_main_about_3rdparty" />
+            <item
+                android:id="@+id/menu_main_about_privacy"
+                android:title="@string/menu_main_about_privacy" />
         </menu>
     </item>
 </menu>

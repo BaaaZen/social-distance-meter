@@ -71,4 +71,5 @@
     <string name="card_official_warn_app_missing_title">Offizielle Warn-App fehlt</string>
     <string name="card_official_warn_app_missing_description">Es scheint so als hätten Sie die offizielle nationale Warn-App (%1$s) nicht installiert. Diese App ist eine Erweiterung zur offiziellen Warn-App, kein Ersatz. Sie sollten immer, um sich selbst und ihre Mitmenschen zu schützen, die offizielle Warn-App installieren.\n\nDiese Warnung wird verschwinden wenn eine offizielle Warn-App installiert ist.\n\nFalls Sie bereits eine offizielle Warn-App installiert haben, diese aber fälschlicherweise nicht erkannt wird, melden Sie das Problem bitte an den Author.</string>
     <string name="card_official_warn_app_missing_command_install">%1$s im Play Store öffnen</string>
+    <string name="menu_main_about_privacy">Datenschutzerklärung</string>
 </resources>

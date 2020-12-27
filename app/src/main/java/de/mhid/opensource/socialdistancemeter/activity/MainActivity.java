@@ -170,6 +170,12 @@ public class MainActivity extends AppCompatActivity {
       markdownActivity.putExtra(MarkdownActivity.INTENT_START_ACTIVITY__MARKDOWN_FILE, "thirdparty");
       startActivity(markdownActivity);
       return true;
+    } else if(selectedId == R.id.menu_main_about_privacy) {
+      // open markdown activity -> privacy_policy.md
+      Intent markdownActivity = new Intent(this, MarkdownActivity.class);
+      markdownActivity.putExtra(MarkdownActivity.INTENT_START_ACTIVITY__MARKDOWN_FILE, "privacy-policy");
+      startActivity(markdownActivity);
+      return true;
     }
 
     return super.onOptionsItemSelected(item);
