@@ -211,7 +211,7 @@ public class DiagKeySyncWorker extends Worker {
         try {
             sendSyncStatusUpdate(getApplicationContext().getString(R.string.card_risks_sync_status_starting_download),0);
 
-            List<Country> countries = new ArrayList<>(Arrays.asList(CountryList.COUNTRIES));
+            List<Country> countries = CountryList.getEnabledCountries(getApplicationContext());
 
             boolean success = downloadKeys(countries);
             if(!success) error = getApplicationContext().getString(R.string.card_risks_sync_status_error_download);

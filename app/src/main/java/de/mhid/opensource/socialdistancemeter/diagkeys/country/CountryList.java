@@ -17,14 +17,28 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 package de.mhid.opensource.socialdistancemeter.diagkeys.country;
 
+import android.content.Context;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import de.mhid.opensource.socialdistancemeter.diagkeys.countries.Austria;
 import de.mhid.opensource.socialdistancemeter.diagkeys.countries.Germany;
 
 public class CountryList {
-    public final static Country[] COUNTRIES = {
+    private final static Country[] COUNTRIES = {
             new Austria(),
             new Germany()
     };
 
     private CountryList() {}
+
+    public static List<Country> getEnabledCountries(Context ctx) {
+        ArrayList<Country> countryList = new ArrayList<>();
+        for(Country c : COUNTRIES) {
+            if(c.isEnabled(ctx)) countryList.add(c);
+        }
+
+        return countryList;
+    }
 }

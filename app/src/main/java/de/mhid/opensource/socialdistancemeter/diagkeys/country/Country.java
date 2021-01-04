@@ -17,7 +17,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 package de.mhid.opensource.socialdistancemeter.diagkeys.country;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
+
+import androidx.preference.PreferenceManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -46,11 +50,18 @@ public abstract class Country {
 
     public abstract void preKeyUpdate();
     public abstract void postKeyUpdate();
-
     protected abstract String getCountryBaseUrl();
 
+    public abstract int getCountrySettingStringId();
     public abstract String getCountryCode();
     public abstract int getCountryName();
+
+    public boolean isEnabled(Context ctx) {
+        String settingName = ctx.getString(getCountrySettingStringId());
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(ctx);
+        return sharedPreferences.getBoolean(settingName, true);
+    }
 
     protected TemporaryExposureKeyExportParser.TemporaryExposureKeyExport parseKeysFromDownload(byte[] keysZipContent) throws CountryDownloadException {
         HashMap<String, ByteArrayOutputStream> fileContent = new HashMap<>();

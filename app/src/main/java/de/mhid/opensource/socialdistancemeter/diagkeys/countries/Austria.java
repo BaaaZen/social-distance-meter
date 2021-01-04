@@ -53,6 +53,11 @@ public class Austria extends CountryWithDailyKeys {
     }
 
     @Override
+    public int getCountrySettingStringId() {
+        return R.string.settings_key_risk_sync_country_enabled_at;
+    }
+
+    @Override
     public String getCountryCode() {
         return "at";
     }

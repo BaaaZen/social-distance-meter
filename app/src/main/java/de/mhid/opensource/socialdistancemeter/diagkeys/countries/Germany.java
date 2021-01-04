@@ -54,6 +54,11 @@ public class Germany extends CountryWithHourlyKeys {
     }
 
     @Override
+    public int getCountrySettingStringId() {
+        return R.string.settings_key_risk_sync_country_enabled_de;
+    }
+
+    @Override
     public String getCountryCode() {
         return "de";
     }
