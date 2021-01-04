@@ -3,6 +3,7 @@
 ## 0.2.0 (Beta)
 * Diagnosis keys from Austria
 * Countries selectable in settings
+* Improved/optimized diag key sync
 
 ## 0.1.2 (Beta)
 * Privacy Policy
