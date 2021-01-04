@@ -530,9 +530,15 @@ public class DiagKeySyncWorker extends Worker {
 
         Database db = Database.getInstance(getApplicationContext());
 
+        Date startDate = new Date();
+        Log.d(getClass().getSimpleName(), "Start: " + startDate);
         // get sorted list of all tokens collected this day
         int queryMargin = ROLLING_TIMESTAMP_MATCH_THRESHOLD;
         List<CwaTokenDistinct> tokenList = db.runSync(() -> db.cwaDatabase().cwaToken().getDistinctTokensForDay(timeslotDiagKeys.rollingStartIntervalNumber - queryMargin, timeslotDiagKeys.rollingEndIntervalNumber + queryMargin));
+
+        Date queryDate = new Date();
+        Log.d(getClass().getSimpleName(), "Query: " + (queryDate.getTime() - startDate.getTime()));
+
         List<Pair<String, DiagKeyCrypto>> rpiList;
         try {
             rpiList = timeslotDiagKeys.getSortedRPIsForDiagKeys();
@@ -540,6 +546,9 @@ public class DiagKeySyncWorker extends Worker {
             Log.e(getClass().getSimpleName(), "Checking diagnosis keys not possible. Crypto error: " + cryptoError);
             return false;
         }
+
+        Date rpiSortDate = new Date();
+        Log.d(getClass().getSimpleName(), "RPI sort: " + (rpiSortDate.getTime() - queryDate.getTime()));
 
         ArrayList<Pair<CwaTokenDistinct, Pair<String, DiagKeyCrypto>>> potentialMatches = new ArrayList<>();
         int ptr = 0;
@@ -561,6 +570,9 @@ public class DiagKeySyncWorker extends Worker {
             }
         }
 
+        Date compareDate = new Date();
+        Log.d(getClass().getSimpleName(), "Compare: " + (compareDate.getTime() - rpiSortDate.getTime()) + " ~ potential matches: " + potentialMatches.size());
+
         // validate matches
         ArrayList<Pair<CwaTokenDistinct, Pair<String, DiagKeyCrypto>>> realMatches = new ArrayList<>();
         for(Pair<CwaTokenDistinct, Pair<String, DiagKeyCrypto>> match : potentialMatches) {
@@ -574,6 +586,9 @@ public class DiagKeySyncWorker extends Worker {
             } catch (DiagKeyCrypto.CryptoError ignored) { }
         }
 
+        Date compare2Date = new Date();
+        Log.d(getClass().getSimpleName(), "Compare2: " + (compare2Date.getTime() - compareDate.getTime()) + " ~ real matches: " + realMatches.size());
+
         // flag diag keys as checked
         List<CwaDiagKey> diagKeys = timeslotDiagKeys.getDiagKeys();
         if(!diagKeys.isEmpty()) {
@@ -583,6 +598,9 @@ public class DiagKeySyncWorker extends Worker {
             db.runSync(() -> db.cwaDatabase().cwaDiagKey().update(diagKeys));
         }
 
+        Date flagDate = new Date();
+        Log.d(getClass().getSimpleName(), "Flag: " + (flagDate.getTime() - compare2Date.getTime()));
+
         // update matches in db
         for(Pair<CwaTokenDistinct, Pair<String, DiagKeyCrypto>> match : realMatches) {
             db.runSync((Database.RunnableWithReturn<Void>) () -> {
@@ -590,6 +608,9 @@ public class DiagKeySyncWorker extends Worker {
                 return null;
             });
         }
+
+        Date updateDate = new Date();
+        Log.d(getClass().getSimpleName(), "Update: " + (updateDate.getTime() - flagDate.getTime()));
 
         return true;
     }
