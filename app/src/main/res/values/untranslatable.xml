@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 Social Distance Meter - An app to analyze and rate your social distancing behavior
-Copyright (C) 2020  Mirko Hansen (baaazen@gmail.com)
+Copyright (C) 2020-2021  Mirko Hansen (baaazen@gmail.com)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -24,6 +24,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <string name="settings_key_scan_location_use_gps" translatable="false">settings_scan_location_use_gps</string>
     <string name="settings_key_scan_location_period" translatable="false">settings_scan_location_period</string>
     <string name="settings_key_risk_sync_enabled" translatable="false">settings_key_risk_sync_enabled</string>
+    <string name="settings_key_risk_sync_country_enabled_at" translatable="false">settings_key_risk_sync_country_enabled_at</string>
+    <string name="settings_key_risk_sync_country_enabled_de" translatable="false">settings_key_risk_sync_country_enabled_de</string>
 
     <!-- settings: scan settings -->
     <string name="settings_list_scan_period_default_value" translatable="false">1min</string>

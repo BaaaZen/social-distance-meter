@@ -75,6 +75,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     </string-array>
     <string name="settings_category_sync">Diagnosis keys</string>
     <string name="settings_title_risk_sync_enabled">Synchronization enabled</string>
+    <string name="settings_category_sync_category_countries">Countries</string>
 
     <!-- CARD: current informations -->
     <string name="card_current_title">Current environment</string>
