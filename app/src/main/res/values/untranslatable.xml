@@ -45,10 +45,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     </string-array>
 
     <!-- internal: list of national warn app package names -->
+    <string name="official_warn_app_package_name_at" translatable="false">at.roteskreuz.stopcorona</string>
+    <string name="official_warn_app_name_at" translatable="false">Stopp Corona</string>
     <string name="official_warn_app_package_name_de" translatable="false">de.rki.coronawarnapp</string>
     <string name="official_warn_app_name_de" translatable="false">Corona Warn App</string>
 
     <string-array name="official_warn_app_package_names">
+        <item>@string/official_warn_app_package_name_at</item>
         <item>@string/official_warn_app_package_name_de</item>
     </string-array>
 
