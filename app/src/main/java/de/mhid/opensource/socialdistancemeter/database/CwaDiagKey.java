@@ -1,6 +1,6 @@
 /*
 Social Distance Meter - An app to analyze and rate your social distancing behavior
-Copyright (C) 2020  Mirko Hansen (baaazen@gmail.com)
+Copyright (C) 2020-2021  Mirko Hansen (baaazen@gmail.com)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -23,11 +23,13 @@ import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
+import androidx.room.migration.Migration;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 
 @Entity(
         tableName = "cwa_diag_key",
         foreignKeys = @ForeignKey(entity = CwaCountryFile.class, parentColumns = "id", childColumns = "file_id", onDelete = ForeignKey.CASCADE),
-        indices = { @Index("file_id") }
+        indices = { @Index("file_id"), @Index("rolling_start_interval_number"), @Index("rolling_period") }
 )
 public class CwaDiagKey {
     @PrimaryKey(autoGenerate = true)

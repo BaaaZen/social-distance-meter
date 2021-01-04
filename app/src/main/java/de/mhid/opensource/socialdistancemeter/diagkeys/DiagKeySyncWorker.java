@@ -47,6 +47,7 @@ import de.mhid.opensource.socialdistancemeter.activity.maincards.CardRisks;
 import de.mhid.opensource.socialdistancemeter.database.CwaCountry;
 import de.mhid.opensource.socialdistancemeter.database.CwaCountryFile;
 import de.mhid.opensource.socialdistancemeter.database.CwaDiagKey;
+import de.mhid.opensource.socialdistancemeter.database.CwaDiagKeyCount;
 import de.mhid.opensource.socialdistancemeter.database.CwaTokenDistinct;
 import de.mhid.opensource.socialdistancemeter.database.CwaTokenMinRollingTimestamp;
 import de.mhid.opensource.socialdistancemeter.database.Database;
@@ -57,12 +58,14 @@ import de.mhid.opensource.socialdistancemeter.diagkeys.country.CountryWithHourly
 import de.mhid.opensource.socialdistancemeter.diagkeys.parser.TemporaryExposureKeyExportParser;
 import de.mhid.opensource.socialdistancemeter.notification.NotificationChannelHelper;
 import de.mhid.opensource.socialdistancemeter.services.DiagKeySyncService;
+import de.mhid.opensource.socialdistancemeter.utils.ArrayComparator;
 import de.mhid.opensource.socialdistancemeter.utils.HexString;
 
 public class DiagKeySyncWorker extends Worker {
     public final static String WORK_PARAMETER_BACKGROUND = "background";
 
     public final static int ROLLING_TIMESTAMP_MATCH_THRESHOLD = 3; // 30 mins
+    public final static int MAX_COMPARE_BLOCK_SIZE = 2000;
 
     private static final ReentrantLock lock = new ReentrantLock();
     public static boolean isRunning() {
@@ -73,13 +76,6 @@ public class DiagKeySyncWorker extends Worker {
 //    private static Date lastExecution = null;
     private static boolean lockConcurrency() {
         synchronized (lock) {
-//            if(lastExecution != null) {
-//                if(TimeUnit.MINUTES.convert(new Date().getTime() - lastExecution.getTime(), TimeUnit.MILLISECONDS) < 10) {
-//                    // wait at least 10 minutes before re-syncing
-//                    return false;
-//                }
-//            }
-
             if(lock.isLocked()) return false;
             lock.lock();
             return true;
@@ -89,8 +85,6 @@ public class DiagKeySyncWorker extends Worker {
     private static void unlockConcurrency() {
         synchronized (lock) {
             lock.unlock();
-
-//            lastExecution = new Date();
         }
     }
 
@@ -112,18 +106,23 @@ public class DiagKeySyncWorker extends Worker {
                 );
         }
 
+        public boolean isFull(int maxCount) {
+            return diagKeys.size() >= maxCount;
+        }
+
         public void addDiagKey(CwaDiagKey diagKey) {
             if(diagKey.rollingStartIntervalNumber < rollingStartIntervalNumber) rollingStartIntervalNumber = diagKey.rollingStartIntervalNumber;
             if(diagKey.rollingStartIntervalNumber + diagKey.rollingPeriod < rollingEndIntervalNumber) rollingEndIntervalNumber = diagKey.rollingStartIntervalNumber + diagKey.rollingPeriod;
             diagKeys.add(new DiagKeyCrypto(diagKey));
         }
 
-        public List<Pair<String, DiagKeyCrypto>> getSortedRPIsForDiagKeys() throws DiagKeyCrypto.CryptoError {
-            ArrayList<Pair<String,DiagKeyCrypto>> sortedRPIs = new ArrayList<>();
+        public List<Pair<byte[], DiagKeyCrypto>> getSortedRPIsForDiagKeys() throws DiagKeyCrypto.CryptoError {
+            ArrayList<Pair<byte[],DiagKeyCrypto>> sortedRPIs = new ArrayList<>();
             for (DiagKeyCrypto diagKey : diagKeys) {
-                sortedRPIs.addAll(diagKey.getAllRPIs());
+                sortedRPIs.addAll(Arrays.asList(diagKey.getAllRPIs()));
             }
-            Collections.sort(sortedRPIs, (o1, o2) -> o1.first.compareTo(o2.first));
+            Collections.sort(sortedRPIs, (o1, o2) -> ArrayComparator.compare(o1.first, o2.first));
+
             return sortedRPIs;
         }
 
@@ -140,27 +139,6 @@ public class DiagKeySyncWorker extends Worker {
             return DateFormat.getDateInstance(DateFormat.MEDIUM).format(d);
         }
     }
-
-//    static class TimeslotTokens {
-//        private final CwaToken referenceToken;
-//        private final List<CwaToken> tokens = new ArrayList<>();
-//        public TimeslotTokens(CwaToken referenceToken) {
-//            this.referenceToken = referenceToken;
-//        }
-//
-//        public boolean belongsToThisTimeslot(CwaToken token) {
-//            return token.rollingTimestamp == referenceToken.rollingTimestamp;
-//        }
-//
-//        public void addToken(CwaToken token) {
-//            tokens.add(token);
-//        }
-//
-//        public List<CwaToken> getTokens() {
-//            return tokens;
-//        }
-//    }
-
 
     private final SharedPreferences sharedPreferences;
 
@@ -300,13 +278,11 @@ public class DiagKeySyncWorker extends Worker {
         int countryCounter = 0;
         for(Country country : countries) {
             // status update
-            String countryName = getApplicationContext().getString(country.getCountryName());
             int progress = 10 + countryCounter * 40 / countries.size();
-            sendSyncStatusUpdate(getApplicationContext().getString(R.string.card_risks_sync_status_download_country, countryName), progress);
             countryCounter++;
 
             // downloading keys
-            success &= downloadKeysForCountry(country);
+            success &= downloadKeysForCountry(country, progress);
             availableCountries.add(country.getCountryCode());
         }
 
@@ -325,7 +301,12 @@ public class DiagKeySyncWorker extends Worker {
         return success;
     }
 
-    private boolean downloadKeysForCountry(Country country) {
+    private boolean downloadKeysForCountry(Country country, int progress) {
+        // update status
+        String countryName = getApplicationContext().getString(country.getCountryName());
+        String status = getApplicationContext().getString(R.string.card_risks_sync_status_download_country, countryName);
+        sendSyncStatusUpdate(status, progress);
+
         // find country in DB
         Database db = Database.getInstance(getApplicationContext());
 
@@ -345,7 +326,7 @@ public class DiagKeySyncWorker extends Worker {
 
         try {
             if(country instanceof CountryWithDailyKeys) {
-                return downloadDailyKeysForCountry((CountryWithDailyKeys)country, cwaCountryId);
+                return downloadDailyKeysForCountry((CountryWithDailyKeys)country, cwaCountryId, status, progress);
             } else {
                 // other download mode -> not yet implemented
                 return false;
@@ -355,7 +336,7 @@ public class DiagKeySyncWorker extends Worker {
         }
     }
 
-    private boolean downloadDailyKeysForCountry(CountryWithDailyKeys country, long countryId) {
+    private boolean downloadDailyKeysForCountry(CountryWithDailyKeys country, long countryId, String status, int progress) {
         // get DB instance
         Database db = Database.getInstance(getApplicationContext());
 
@@ -389,6 +370,7 @@ public class DiagKeySyncWorker extends Worker {
         // fetch new days
         boolean success = true;
         for(String availableDate : availableDates) {
+            sendSyncStatusUpdate(status + ": " + availableDate, progress);
             if(!dbAvailableFilesPerDate.containsKey(availableDate) || (!dbCompleteDates.contains(availableDate) && !(country instanceof CountryWithHourlyKeys))) {
                 // no partial/hourly keys for this date -> download whole day
                 success &= downloadDailyKeysForCountryForDay(country, countryId, availableDate);
@@ -499,26 +481,35 @@ public class DiagKeySyncWorker extends Worker {
         CwaTokenMinRollingTimestamp cwaTokenMinRollingTimestamp = db.runSync(() -> db.cwaDatabase().cwaToken().getMinRollingTimestamp());
         if(cwaTokenMinRollingTimestamp == null) return true;
 
+        CwaDiagKeyCount diagKeyCount = db.runSync(() -> db.cwaDatabase().cwaDiagKey().getCountUncheckedInRollingSection(cwaTokenMinRollingTimestamp.minRollingTimestamp));
+
         boolean success = true;
-
-        // group diag keys by timeslots
-        List<CwaDiagKey> diagKeyList = db.runSync(() -> db.cwaDatabase().cwaDiagKey().getUncheckedInRollingSection(cwaTokenMinRollingTimestamp.minRollingTimestamp));
-        TimeslotDiagKeys timeslot = null;
-        int percent = 0;
         int diagKeyCounter = 0;
-        for(CwaDiagKey diagKey : diagKeyList) {
-            // status precalc
-            percent = diagKeyCounter * 100 / diagKeyList.size();
-            diagKeyCounter++;
 
-            if(timeslot != null && !timeslot.belongsToThisTimeslot(diagKey)) {
-                success &= checkDiagKeysForDay(timeslot, percent);
-                timeslot = null;
+        while(diagKeyCounter < diagKeyCount.count) {
+            // group diag keys by timeslots
+            List<CwaDiagKey> diagKeyList = db.runSync(() -> db.cwaDatabase().cwaDiagKey().getUncheckedInRollingSection(cwaTokenMinRollingTimestamp.minRollingTimestamp, MAX_COMPARE_BLOCK_SIZE));
+            if(diagKeyList.size() == 0) break;
+
+            TimeslotDiagKeys timeslot = null;
+
+            int percent = 0;
+            for (CwaDiagKey diagKey : diagKeyList) {
+                // status precalc
+                percent = diagKeyCounter * 100 / diagKeyCount.count;
+                diagKeyCounter++;
+
+                if (timeslot != null && (!timeslot.belongsToThisTimeslot(diagKey) || timeslot.isFull(MAX_COMPARE_BLOCK_SIZE))) {
+                    Log.d(getClass().getSimpleName(), "[checkDiagKeys] Timeslot done");
+
+                    success &= checkDiagKeysForDay(timeslot, percent);
+                    timeslot = null;
+                }
+                if (timeslot == null) timeslot = new TimeslotDiagKeys(diagKey);
+                timeslot.addDiagKey(diagKey);
             }
-            if(timeslot == null) timeslot = new TimeslotDiagKeys(diagKey);
-            timeslot.addDiagKey(diagKey);
+            if (timeslot != null) success &= checkDiagKeysForDay(timeslot, percent);
         }
-        if(timeslot != null) success &= checkDiagKeysForDay(timeslot, percent);
 
         return success;
     }
@@ -530,16 +521,11 @@ public class DiagKeySyncWorker extends Worker {
 
         Database db = Database.getInstance(getApplicationContext());
 
-        Date startDate = new Date();
-        Log.d(getClass().getSimpleName(), "Start: " + startDate);
         // get sorted list of all tokens collected this day
         int queryMargin = ROLLING_TIMESTAMP_MATCH_THRESHOLD;
         List<CwaTokenDistinct> tokenList = db.runSync(() -> db.cwaDatabase().cwaToken().getDistinctTokensForDay(timeslotDiagKeys.rollingStartIntervalNumber - queryMargin, timeslotDiagKeys.rollingEndIntervalNumber + queryMargin));
 
-        Date queryDate = new Date();
-        Log.d(getClass().getSimpleName(), "Query: " + (queryDate.getTime() - startDate.getTime()));
-
-        List<Pair<String, DiagKeyCrypto>> rpiList;
+        List<Pair<byte[], DiagKeyCrypto>> rpiList;
         try {
             rpiList = timeslotDiagKeys.getSortedRPIsForDiagKeys();
         } catch (DiagKeyCrypto.CryptoError cryptoError) {
@@ -547,16 +533,13 @@ public class DiagKeySyncWorker extends Worker {
             return false;
         }
 
-        Date rpiSortDate = new Date();
-        Log.d(getClass().getSimpleName(), "RPI sort: " + (rpiSortDate.getTime() - queryDate.getTime()));
-
-        ArrayList<Pair<CwaTokenDistinct, Pair<String, DiagKeyCrypto>>> potentialMatches = new ArrayList<>();
+        ArrayList<Pair<CwaTokenDistinct, Pair<byte[], DiagKeyCrypto>>> potentialMatches = new ArrayList<>();
         int ptr = 0;
         for(CwaTokenDistinct token : tokenList) {
             while(true) {
                 if(ptr >= rpiList.size()) break;
-                Pair<String, DiagKeyCrypto> rpi = rpiList.get(ptr);
-                int cmp = rpi.first.compareTo(token.token);
+                Pair<byte[], DiagKeyCrypto> rpi = rpiList.get(ptr);
+                int cmp = ArrayComparator.compare(rpi.first, HexString.toByteArray(token.token));
 
                 // rpi greater than token
                 if(cmp > 0) break;
@@ -570,12 +553,9 @@ public class DiagKeySyncWorker extends Worker {
             }
         }
 
-        Date compareDate = new Date();
-        Log.d(getClass().getSimpleName(), "Compare: " + (compareDate.getTime() - rpiSortDate.getTime()) + " ~ potential matches: " + potentialMatches.size());
-
         // validate matches
-        ArrayList<Pair<CwaTokenDistinct, Pair<String, DiagKeyCrypto>>> realMatches = new ArrayList<>();
-        for(Pair<CwaTokenDistinct, Pair<String, DiagKeyCrypto>> match : potentialMatches) {
+        ArrayList<Pair<CwaTokenDistinct, Pair<byte[], DiagKeyCrypto>>> realMatches = new ArrayList<>();
+        for(Pair<CwaTokenDistinct, Pair<byte[], DiagKeyCrypto>> match : potentialMatches) {
             try {
                 long rollingTimestampOfDiagKey = match.second.second.getRollingTimestampForRpi(match.second.first);
                 if(rollingTimestampOfDiagKey == -1) continue;
@@ -586,9 +566,6 @@ public class DiagKeySyncWorker extends Worker {
             } catch (DiagKeyCrypto.CryptoError ignored) { }
         }
 
-        Date compare2Date = new Date();
-        Log.d(getClass().getSimpleName(), "Compare2: " + (compare2Date.getTime() - compareDate.getTime()) + " ~ real matches: " + realMatches.size());
-
         // flag diag keys as checked
         List<CwaDiagKey> diagKeys = timeslotDiagKeys.getDiagKeys();
         if(!diagKeys.isEmpty()) {
@@ -598,19 +575,13 @@ public class DiagKeySyncWorker extends Worker {
             db.runSync(() -> db.cwaDatabase().cwaDiagKey().update(diagKeys));
         }
 
-        Date flagDate = new Date();
-        Log.d(getClass().getSimpleName(), "Flag: " + (flagDate.getTime() - compare2Date.getTime()));
-
         // update matches in db
-        for(Pair<CwaTokenDistinct, Pair<String, DiagKeyCrypto>> match : realMatches) {
+        for(Pair<CwaTokenDistinct, Pair<byte[], DiagKeyCrypto>> match : realMatches) {
             db.runSync((Database.RunnableWithReturn<Void>) () -> {
                 db.cwaDatabase().cwaToken().linkTokenToDiagKey(match.second.second.getDiagKey().id, match.first.token, match.first.mac, match.first.rollingTimestamp);
                 return null;
             });
         }
-
-        Date updateDate = new Date();
-        Log.d(getClass().getSimpleName(), "Update: " + (updateDate.getTime() - flagDate.getTime()));
 
         return true;
     }

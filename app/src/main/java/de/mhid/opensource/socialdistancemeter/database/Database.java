@@ -1,6 +1,6 @@
 /*
 Social Distance Meter - An app to analyze and rate your social distancing behavior
-Copyright (C) 2020  Mirko Hansen (baaazen@gmail.com)
+Copyright (C) 2020-2021  Mirko Hansen (baaazen@gmail.com)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -27,24 +27,20 @@ public class Database {
     T run();
   }
 
-//  private static Database instance = null;
   public static Database getInstance(Context ctx) {
-//    if(instance == null) instance = new Database(ctx);
-//    return instance;
     return new Database(ctx);
   }
 
 
-//  private CwaDatabase cwaDatabase;
   private final Context ctx;
   private Database(Context ctx) {
     this.ctx = ctx;
-//    cwaDatabase = Room.databaseBuilder(ctx, CwaDatabase.class, "cwa-token.db").build();
   }
 
   public CwaDatabase cwaDatabase() {
-    return Room.databaseBuilder(ctx, CwaDatabase.class, "cwa-token.db").build();
-//    return cwaDatabase;
+    return Room.databaseBuilder(ctx, CwaDatabase.class, "cwa-token.db")
+            .addMigrations(Migrations.MIGRATION_1_2)
+            .build();
   }
 
   public void runAsync(Runnable runnable) {

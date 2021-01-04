@@ -1,6 +1,6 @@
 /*
 Social Distance Meter - An app to analyze and rate your social distancing behavior
-Copyright (C) 2020  Mirko Hansen (baaazen@gmail.com)
+Copyright (C) 2020-2021  Mirko Hansen (baaazen@gmail.com)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,10 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -49,7 +46,7 @@ public class DiagKeyCrypto {
     private final CwaDiagKey cwaDiagKey;
 
     private byte[] rpiKey = null;
-    private final List<Pair<String, DiagKeyCrypto>> calculatedRollingTimestamps = new ArrayList<>();
+    private Pair<byte[], DiagKeyCrypto>[] calculatedRollingTimestamps = null;
 
     public DiagKeyCrypto(CwaDiagKey cwaDiagKey) {
 
@@ -104,59 +101,64 @@ public class DiagKeyCrypto {
         return rpiKey;
     }
 
-    private byte[] aesEncrypt(byte[] key, byte[] data) throws CryptoError {
-        Key aesKey = new SecretKeySpec(key, "AES");
-        try {
-            @SuppressLint("GetInstance") Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
-            cipher.init(Cipher.ENCRYPT_MODE, aesKey);
-            return cipher.doFinal(data);
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
-            throw new CryptoError(e);
+    private static class AESEncrypt {
+        private final Cipher cipher;
+
+        @SuppressLint("GetInstance")
+        public AESEncrypt(byte[] key) throws CryptoError {
+            Key aesKey = new SecretKeySpec(key, "AES");
+            try {
+                cipher = Cipher.getInstance("AES/ECB/NoPadding");
+                cipher.init(Cipher.ENCRYPT_MODE, aesKey);
+            } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException e) {
+                throw new CryptoError(e);
+            }
+        }
+
+        public byte[] encrypt(byte[] data) throws CryptoError {
+            try {
+                return cipher.doFinal(data);
+            } catch (BadPaddingException | IllegalBlockSizeException e) {
+                throw new CryptoError(e);
+            }
         }
     }
 
-    public List<Pair<String,DiagKeyCrypto>> getAllRPIs() throws CryptoError {
-        if(calculatedRollingTimestamps.isEmpty()) {
+    public Pair<byte[],DiagKeyCrypto>[] getAllRPIs() throws CryptoError {
+        if(calculatedRollingTimestamps == null) {
+            //noinspection unchecked
+            calculatedRollingTimestamps = (Pair<byte[], DiagKeyCrypto>[]) new Pair[cwaDiagKey.rollingPeriod];
+
+            long rollingTimestamp = cwaDiagKey.rollingStartIntervalNumber;
+            byte[] data = ByteBuffer.allocate(16)
+                    .order(ByteOrder.LITTLE_ENDIAN)
+                    .put("EN-RPI".getBytes(StandardCharsets.UTF_8))
+                    .put(new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
+                    .putInt(0)
+                    .array();
+
+            AESEncrypt aesEncrypt = new AESEncrypt(getRpiKey());
+
             for(int i=0; i<cwaDiagKey.rollingPeriod; i++) {
-                long rollingTimestamp = cwaDiagKey.rollingStartIntervalNumber + i;
                 // recalculate
-                byte[] data = ByteBuffer.allocate(16)
+                ByteBuffer.wrap(data)
                         .order(ByteOrder.LITTLE_ENDIAN)
-                        .put("EN-RPI".getBytes(StandardCharsets.UTF_8))
-                        .put(new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
-                        .putInt((int) (rollingTimestamp & 0xffffffffL))
-                        .array();
-                String rpi = HexString.toHexString(aesEncrypt(getRpiKey(), data));
-                calculatedRollingTimestamps.add(new Pair<>(rpi, this));
+                        .putInt(12, (int) (rollingTimestamp & 0xffffffffL));
+
+                byte[] rpi = aesEncrypt.encrypt(data);
+                calculatedRollingTimestamps[i] = new Pair<>(rpi, this);
+                rollingTimestamp++;
             }
         }
+
         return calculatedRollingTimestamps;
     }
 
-    public long getRollingTimestampForRpi(String token) throws CryptoError {
-        List<Pair<String, DiagKeyCrypto>> rpis = getAllRPIs();
-        for(int i=0; i<rpis.size(); i++) {
-            if(rpis.get(i).first.equals(token)) return cwaDiagKey.rollingStartIntervalNumber + i;
+    public long getRollingTimestampForRpi(byte[] token) throws CryptoError {
+        Pair<byte[], DiagKeyCrypto>[] rpis = getAllRPIs();
+        for(int i=0; i<rpis.length; i++) {
+            if(Arrays.equals(rpis[i].first, token)) return cwaDiagKey.rollingStartIntervalNumber + i;
         }
         return -1;
     }
-//
-//    public boolean isTokenMatching(String token, long rollingTimestamp) throws CryptoError {
-//        String rpi = token.substring(0, 32);
-////        String aem = token.substring(32);
-//
-//        byte[] rpiFromToken = HexString.toByteArray(rpi);
-////        byte[] aemKey = HexString.toByteArray(aem);
-//
-//        // compare with rpi of a rolling timestamp diff ~ 30mins
-//        for(long rti=rollingTimestamp-3; rti<=rollingTimestamp+3; rti++) {
-//            if(rti < cwaDiagKey.rollingStartIntervalNumber) continue;
-//            if(rti >= cwaDiagKey.rollingStartIntervalNumber + cwaDiagKey.rollingPeriod) break;
-//
-//            byte[] rpiFromDiagKey = getRpiForRollingTimestamp(rti);
-//            if(Arrays.equals(rpiFromToken, rpiFromDiagKey)) return true;
-//        }
-//
-//        return false;
-//    }
 }

@@ -18,25 +18,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 package de.mhid.opensource.socialdistancemeter.database;
 
 import androidx.annotation.NonNull;
-import androidx.room.Database;
-import androidx.room.RoomDatabase;
-import androidx.room.TypeConverters;
-import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
-@Database(
-    entities = {
-        CwaCountry.class,
-        CwaCountryFile.class,
-        CwaDiagKey.class,
-        CwaToken.class
-    },
-    version = 2
-)
-@TypeConverters({Converters.class})
-public abstract class CwaDatabase extends RoomDatabase {
-  public abstract CwaCountryDao cwaCountry();
-  public abstract CwaCountryFileDao cwaCountryFile();
-  public abstract CwaDiagKeyDao cwaDiagKey();
-  public abstract CwaTokenDao cwaToken();
+public class Migrations {
+    static final androidx.room.migration.Migration MIGRATION_1_2 = new androidx.room.migration.Migration(1, 2) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_cwa_diag_key_rolling_start_interval_number` ON `cwa_diag_key` (`rolling_start_interval_number`)");
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_cwa_diag_key_rolling_period` ON `cwa_diag_key` (`rolling_period`)");
+        }
+    };
 }

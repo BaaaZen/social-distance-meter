@@ -1,6 +1,6 @@
 /*
 Social Distance Meter - An app to analyze and rate your social distancing behavior
-Copyright (C) 2020  Mirko Hansen (baaazen@gmail.com)
+Copyright (C) 2020-2021  Mirko Hansen (baaazen@gmail.com)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -32,8 +32,11 @@ public interface CwaDiagKeyDao {
     @Update
     Void update(List<CwaDiagKey> diagKeys);
 
-    @Query("SELECT * FROM cwa_diag_key WHERE (rolling_start_interval_number >= :minRollingTimestamp OR rolling_start_interval_number + rolling_period > :minRollingTimestamp) AND flag_checked = 0 ORDER BY rolling_start_interval_number ASC, rolling_period ASC")
-    List<CwaDiagKey> getUncheckedInRollingSection(long minRollingTimestamp);
+    @Query("SELECT COUNT(*) as count FROM cwa_diag_key WHERE (rolling_start_interval_number >= :minRollingTimestamp OR rolling_start_interval_number + rolling_period > :minRollingTimestamp) AND flag_checked = 0")
+    CwaDiagKeyCount getCountUncheckedInRollingSection(long minRollingTimestamp);
+
+    @Query("SELECT * FROM cwa_diag_key WHERE (rolling_start_interval_number >= :minRollingTimestamp OR rolling_start_interval_number + rolling_period > :minRollingTimestamp) AND flag_checked = 0 ORDER BY rolling_start_interval_number ASC, rolling_period ASC LIMIT :limit")
+    List<CwaDiagKey> getUncheckedInRollingSection(long minRollingTimestamp, int limit);
 
     @Query("SELECT COUNT(*) as count FROM cwa_diag_key")
     CwaDiagKeyCount getCount();
