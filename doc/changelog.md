@@ -2,6 +2,7 @@
 
 ## 0.2.0 (Beta)
 * Diagnosis keys from Austria
+* Countries selectable in settings
 
 ## 0.1.2 (Beta)
 * Privacy Policy
