@@ -1,6 +1,6 @@
 /*
 Social Distance Meter - An app to analyze and rate your social distancing behavior
-Copyright (C) 2020  Mirko Hansen (baaazen@gmail.com)
+Copyright (C) 2020-2021  Mirko Hansen (baaazen@gmail.com)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -47,12 +47,13 @@ import de.mhid.opensource.socialdistancemeter.activity.maincards.CardRisks;
 import de.mhid.opensource.socialdistancemeter.database.CwaCountry;
 import de.mhid.opensource.socialdistancemeter.database.CwaCountryFile;
 import de.mhid.opensource.socialdistancemeter.database.CwaDiagKey;
-import de.mhid.opensource.socialdistancemeter.database.CwaToken;
 import de.mhid.opensource.socialdistancemeter.database.CwaTokenDistinct;
 import de.mhid.opensource.socialdistancemeter.database.CwaTokenMinRollingTimestamp;
 import de.mhid.opensource.socialdistancemeter.database.Database;
-import de.mhid.opensource.socialdistancemeter.diagkeys.countries.Country;
-import de.mhid.opensource.socialdistancemeter.diagkeys.countries.CountryList;
+import de.mhid.opensource.socialdistancemeter.diagkeys.country.Country;
+import de.mhid.opensource.socialdistancemeter.diagkeys.country.CountryList;
+import de.mhid.opensource.socialdistancemeter.diagkeys.country.CountryWithDailyKeys;
+import de.mhid.opensource.socialdistancemeter.diagkeys.country.CountryWithHourlyKeys;
 import de.mhid.opensource.socialdistancemeter.diagkeys.parser.TemporaryExposureKeyExportParser;
 import de.mhid.opensource.socialdistancemeter.notification.NotificationChannelHelper;
 import de.mhid.opensource.socialdistancemeter.services.DiagKeySyncService;
@@ -212,7 +213,7 @@ public class DiagKeySyncWorker extends Worker {
 
             List<Country> countries = new ArrayList<>(Arrays.asList(CountryList.COUNTRIES));
 
-            boolean success = downloadDailyKeys(countries);
+            boolean success = downloadKeys(countries);
             if(!success) error = getApplicationContext().getString(R.string.card_risks_sync_status_error_download);
 
             sendSyncStatusUpdate(getApplicationContext().getString(R.string.card_risks_sync_status_starting_compare),50);
@@ -293,7 +294,7 @@ public class DiagKeySyncWorker extends Worker {
         getApplicationContext().sendBroadcast(sndEncountersUpdate);
     }
 
-    private boolean downloadDailyKeys(List<Country> countries) {
+    private boolean downloadKeys(List<Country> countries) {
         boolean success = true;
         HashSet<String> availableCountries = new HashSet<>();
         int countryCounter = 0;
@@ -305,7 +306,7 @@ public class DiagKeySyncWorker extends Worker {
             countryCounter++;
 
             // downloading keys
-            success &= downloadDailyKeysForCountry(country);
+            success &= downloadKeysForCountry(country);
             availableCountries.add(country.getCountryCode());
         }
 
@@ -324,7 +325,7 @@ public class DiagKeySyncWorker extends Worker {
         return success;
     }
 
-    private boolean downloadDailyKeysForCountry(Country country) {
+    private boolean downloadKeysForCountry(Country country) {
         // find country in DB
         Database db = Database.getInstance(getApplicationContext());
 
@@ -339,6 +340,25 @@ public class DiagKeySyncWorker extends Worker {
             cwaCountryId = cwaCountry.id;
         }
 
+        // prepare country for download
+        country.preKeyUpdate();
+
+        try {
+            if(country instanceof CountryWithDailyKeys) {
+                return downloadDailyKeysForCountry((CountryWithDailyKeys)country, cwaCountryId);
+            } else {
+                // other download mode -> not yet implemented
+                return false;
+            }
+        } finally {
+            country.postKeyUpdate();
+        }
+    }
+
+    private boolean downloadDailyKeysForCountry(CountryWithDailyKeys country, long countryId) {
+        // get DB instance
+        Database db = Database.getInstance(getApplicationContext());
+
         // now fetch all available days
         List<String> availableDates = country.getAvailableDates();
         if(availableDates == null) {
@@ -349,21 +369,18 @@ public class DiagKeySyncWorker extends Worker {
         // list all files in database
         HashSet<String> dbCompleteDates = new HashSet<>();
         HashMap<String, List<String>> dbAvailableFilesPerDate = new HashMap<>();
-        List<CwaCountryFile> cwaCountryFiles = db.runSync(() -> db.cwaDatabase().cwaCountryFile().getAllForCountry(cwaCountryId));
+        List<CwaCountryFile> cwaCountryFiles = db.runSync(() -> db.cwaDatabase().cwaCountryFile().getAllForCountry(countryId));
         for(CwaCountryFile cwaCountryFile : cwaCountryFiles) {
             String filename = cwaCountryFile.filename;
             if(filename.contains("/")) {
                 // date/hour key file
                 String date = filename.split("/", 2)[0];
                 if(!dbAvailableFilesPerDate.containsKey(date)) dbAvailableFilesPerDate.put(date, new ArrayList<>());
-                //noinspection ConstantConditions
                 dbAvailableFilesPerDate.get(date).add(filename);
-                //noinspection ConstantConditions
                 if(dbAvailableFilesPerDate.get(date).size() == 24) dbCompleteDates.add(date);
             } else {
                 // only date key file
                 if(!dbAvailableFilesPerDate.containsKey(filename)) dbAvailableFilesPerDate.put(filename, new ArrayList<>());
-                //noinspection ConstantConditions
                 dbAvailableFilesPerDate.get(filename).add(filename);
                 dbCompleteDates.add(filename);
             }
@@ -372,32 +389,32 @@ public class DiagKeySyncWorker extends Worker {
         // fetch new days
         boolean success = true;
         for(String availableDate : availableDates) {
-            if(!dbAvailableFilesPerDate.containsKey(availableDate) || (!dbCompleteDates.contains(availableDate) && !country.offersHourlyKeys())) {
+            if(!dbAvailableFilesPerDate.containsKey(availableDate) || (!dbCompleteDates.contains(availableDate) && !(country instanceof CountryWithHourlyKeys))) {
                 // no partial/hourly keys for this date -> download whole day
-                success &= downloadDailyKeysForCountryForDay(country, cwaCountryId, availableDate);
-            } else if(!dbCompleteDates.contains(availableDate) && country.offersHourlyKeys()) {
+                success &= downloadDailyKeysForCountryForDay(country, countryId, availableDate);
+            } else if(!dbCompleteDates.contains(availableDate) && country instanceof CountryWithHourlyKeys) {
                 // partial keys already in db -> check new hours
-                success &= downloadDailyKeysForCountryForDayByHours(country, cwaCountryId, availableDate, dbAvailableFilesPerDate.get(availableDate));
+                success &= downloadDailyKeysForCountryForDayByHours((CountryWithHourlyKeys)country, countryId, availableDate, dbAvailableFilesPerDate.get(availableDate));
             }
             dbAvailableFilesPerDate.remove(availableDate);
         }
 
         // for hourly keys -> update "today"
-        if(country.offersHourlyKeys()) {
+        if(country instanceof CountryWithHourlyKeys) {
             @SuppressLint("SimpleDateFormat") String today = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
             if(!availableDates.contains(today)) {
                 // already processed date?
-                success &= downloadDailyKeysForCountryForDayByHours(country, cwaCountryId, today, dbAvailableFilesPerDate.get(today));
+                success &= downloadDailyKeysForCountryForDayByHours((CountryWithHourlyKeys)country, countryId, today, dbAvailableFilesPerDate.get(today));
                 dbAvailableFilesPerDate.remove(today);
             }
         }
 
         // delete old days
         for(String removeDate : dbAvailableFilesPerDate.keySet()) {
-            //noinspection ConstantConditions
+            if(country.isDailyKeyValid(removeDate)) continue;
             for(String filename : dbAvailableFilesPerDate.get(removeDate)) {
                 db.runSync((Database.RunnableWithReturn<Void>) () -> {
-                    db.cwaDatabase().cwaCountryFile().deleteForCountry(cwaCountryId, filename);
+                    db.cwaDatabase().cwaCountryFile().deleteForCountry(countryId, filename);
                     return null;
                 });
             }
@@ -406,7 +423,7 @@ public class DiagKeySyncWorker extends Worker {
         return success;
     }
 
-    private boolean downloadDailyKeysForCountryForDay(Country country, long countryId, String day) {
+    private boolean downloadDailyKeysForCountryForDay(CountryWithDailyKeys country, long countryId, String day) {
         try {
             Log.d(getClass().getSimpleName(), "parsing export.bin ...");
             TemporaryExposureKeyExportParser.TemporaryExposureKeyExport tek = country.getParsedKeysForDate(day);
@@ -421,7 +438,7 @@ public class DiagKeySyncWorker extends Worker {
         }
     }
 
-    private boolean downloadDailyKeysForCountryForDayByHours(Country country, long countryId, String day, List<String> dbAvailableHours) {
+    private boolean downloadDailyKeysForCountryForDayByHours(CountryWithHourlyKeys country, long countryId, String day, List<String> dbAvailableHours) {
         List<Integer> hours = country.getAvailableHours(day);
         for(Integer hour : hours) {
             String filename = day + "/" + hour.toString();

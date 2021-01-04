@@ -1,6 +1,6 @@
 /*
 Social Distance Meter - An app to analyze and rate your social distancing behavior
-Copyright (C) 2020  Mirko Hansen (baaazen@gmail.com)
+Copyright (C) 2020-2021  Mirko Hansen (baaazen@gmail.com)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -43,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import de.mhid.opensource.socialdistancemeter.R;
@@ -54,6 +53,7 @@ import de.mhid.opensource.socialdistancemeter.database.Database;
 import de.mhid.opensource.socialdistancemeter.notification.NotificationChannelHelper;
 import de.mhid.opensource.socialdistancemeter.services.work.PurgeTokenFromDatabaseWorker;
 import de.mhid.opensource.socialdistancemeter.utils.HexString;
+import de.mhid.opensource.socialdistancemeter.utils.Timestamp;
 
 public class BleScanService extends Service {
   public final static String INTENT_REQUEST_USER_COUNT = "request_user_count";
@@ -205,8 +205,7 @@ public class BleScanService extends Service {
   public static class CwaScanResult implements Comparable<CwaScanResult> {
     private final List<Integer> rssiHistory = new ArrayList<>();
     private final byte[] token;
-    private final Date localTimestamp = new Date();
-    private final int utcOffset = TimeZone.getDefault().getRawOffset() + TimeZone.getDefault().getDSTSavings();
+    private final Timestamp timestamp = Timestamp.getCurrentTimestamp();
 
     public CwaScanResult(byte[] token) {
       this.token = token;
@@ -232,16 +231,8 @@ public class BleScanService extends Service {
       return rssiSum / rssiItems;
     }
 
-    public long getRollingTimestamp() {
-      return getUTCTimestamp().getTime() / (10 * 60 * 1000);
-    }
-
-    public Date getLocalTimestamp() {
-      return localTimestamp;
-    }
-
-    public Date getUTCTimestamp() {
-      return new Date(getLocalTimestamp().getTime() - utcOffset);
+    public Timestamp getTimestamp() {
+      return timestamp;
     }
 
     public String getHexToken() {
@@ -298,9 +289,9 @@ public class BleScanService extends Service {
         CwaToken dbCwaToken = new CwaToken();
         dbCwaToken.mac = mac;
         dbCwaToken.rssi = scanResult.getRssi();
-        dbCwaToken.rollingTimestamp = scanResult.getRollingTimestamp();
-        dbCwaToken.localTimestamp = scanResult.getLocalTimestamp();
-        dbCwaToken.utcTimestamp = scanResult.getUTCTimestamp();
+        dbCwaToken.rollingTimestamp = scanResult.getTimestamp().getRollingTimestamp();
+        dbCwaToken.localTimestamp = scanResult.getTimestamp().getLocalTimestamp();
+        dbCwaToken.utcTimestamp = scanResult.getTimestamp().getUTCTimestamp();
         dbCwaToken.token = scanResult.getHexToken();
 
         if(location != null) {

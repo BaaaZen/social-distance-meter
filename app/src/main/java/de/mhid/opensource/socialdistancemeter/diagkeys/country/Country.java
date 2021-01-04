@@ -1,6 +1,6 @@
 /*
 Social Distance Meter - An app to analyze and rate your social distancing behavior
-Copyright (C) 2020  Mirko Hansen (baaazen@gmail.com)
+Copyright (C) 2020-2021  Mirko Hansen (baaazen@gmail.com)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-package de.mhid.opensource.socialdistancemeter.diagkeys.countries;
+package de.mhid.opensource.socialdistancemeter.diagkeys.country;
 
 import android.util.Log;
 
@@ -44,99 +44,15 @@ public abstract class Country {
 
     protected Country() {}
 
+    public abstract void preKeyUpdate();
+    public abstract void postKeyUpdate();
+
     protected abstract String getCountryBaseUrl();
+
     public abstract String getCountryCode();
     public abstract int getCountryName();
-    public abstract boolean offersHourlyKeys();
 
-    private String getDateUrl() {
-        return getCountryBaseUrl() + "/date";
-    }
-    private String getDateUrl(String date) {
-        return getCountryBaseUrl() + "/date/" + date;
-    }
-    private String getDateHourUrl(String date) { return getCountryBaseUrl() + "/date/" + date + "/hour"; }
-    private String getDateHourUrl(String date, Integer hour) { return getCountryBaseUrl() + "/date/" + date + "/hour/" + hour.toString(); }
-
-    public List<Integer> getAvailableHours(String date) {
-        try {
-            Object jsonObject = Downloader.requestJson(getDateHourUrl(date));
-            if(!(jsonObject instanceof JSONArray)) {
-                Log.e(getClass().getSimpleName(), "Download error: Expected JSONArray for list of dates");
-                return null;
-            }
-
-            ArrayList<Integer> hours = new ArrayList<>();
-            JSONArray json = (JSONArray)jsonObject;
-            for(int i=0; i<json.length(); i++) {
-                hours.add(json.getInt(i));
-            }
-
-            return hours;
-        } catch (Downloader.DownloadException e) {
-            Log.e(getClass().getSimpleName(), "Download error", e);
-            return null;
-        } catch (JSONException e) {
-            Log.e(getClass().getSimpleName(), "Download error: Invalid JSON response", e);
-            return null;
-        }
-    }
-
-    public List<String> getAvailableDates() {
-        try {
-            Object jsonObject = Downloader.requestJson(getDateUrl());
-            if(!(jsonObject instanceof JSONArray)) {
-                Log.e(getClass().getSimpleName(), "Download error: Expected JSONArray for list of dates");
-                return null;
-            }
-
-            ArrayList<String> dates = new ArrayList<>();
-            JSONArray json = (JSONArray)jsonObject;
-            for(int i=0; i<json.length(); i++) {
-                dates.add(json.getString(i));
-            }
-
-            return dates;
-        } catch (Downloader.DownloadException e) {
-            Log.e(getClass().getSimpleName(), "Download error", e);
-            return null;
-        } catch (JSONException e) {
-            Log.e(getClass().getSimpleName(), "Download error: Invalid JSON response", e);
-            return null;
-        }
-    }
-
-    private void downloadKeysForDate(OutputStream os, String date) throws CountryDownloadException {
-        try {
-            Downloader.requestDownload(getDateUrl(date), os);
-        } catch (Downloader.DownloadException e) {
-            // error downloading file
-            throw new CountryDownloadException("Download error", e);
-        }
-    }
-
-    private void downloadKeysForDateHour(OutputStream os, String date, Integer hour) throws CountryDownloadException {
-        try {
-            Downloader.requestDownload(getDateHourUrl(date, hour), os);
-        } catch (Downloader.DownloadException e) {
-            // error downloading file
-            throw new CountryDownloadException("Download error", e);
-        }
-    }
-
-    public TemporaryExposureKeyExportParser.TemporaryExposureKeyExport getParsedKeysForDate(String date) throws CountryDownloadException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        downloadKeysForDate(baos, date);
-        return parseKeysFromDownload(baos.toByteArray());
-    }
-
-    public TemporaryExposureKeyExportParser.TemporaryExposureKeyExport getParsedKeysForDateHour(String date, Integer hour) throws CountryDownloadException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        downloadKeysForDateHour(baos, date, hour);
-        return parseKeysFromDownload(baos.toByteArray());
-    }
-
-    private TemporaryExposureKeyExportParser.TemporaryExposureKeyExport parseKeysFromDownload(byte[] keysZipContent) throws CountryDownloadException {
+    protected TemporaryExposureKeyExportParser.TemporaryExposureKeyExport parseKeysFromDownload(byte[] keysZipContent) throws CountryDownloadException {
         HashMap<String, ByteArrayOutputStream> fileContent = new HashMap<>();
         try {
             ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(keysZipContent));
