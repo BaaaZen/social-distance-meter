@@ -63,7 +63,7 @@ dependencies {
     implementation "androidx.preference:preference:$preference_version"
 
     // protobuf
-    implementation "com.google.protobuf:protobuf-java:3.13.0"
+    implementation 'com.google.protobuf:protobuf-java:3.14.0'
 
     // work library
     def work_version = "2.4.0"
@@ -71,6 +71,6 @@ dependencies {
     implementation "androidx.work:work-runtime:$work_version"
 
     // markwon
-    def markwon_version = '4.6.0'
+    def markwon_version = '4.6.1'
     implementation "io.noties.markwon:core:$markwon_version"
 }
