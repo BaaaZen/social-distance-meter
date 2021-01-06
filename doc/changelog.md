@@ -3,6 +3,9 @@
 ## 0.3.0 (Beta)
 *
 
+## 0.2.1 (Beta)
+* Bugfix: Detection of "Stopp Corona" app (Austria)
+
 ## 0.2.0 (Beta)
 * Diagnosis keys from Austria
 * Countries selectable in settings
