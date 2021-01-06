@@ -37,6 +37,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
     <!-- required to check if national warn app is installed -->
     <queries>
+        <package android:name="at.roteskreuz.stopcorona" />
         <package android:name="de.rki.coronawarnapp" />
     </queries>
 
